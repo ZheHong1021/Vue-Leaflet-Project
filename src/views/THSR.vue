@@ -49,6 +49,12 @@
 
 
       <div class="w-1/2 my-4">
+       <h1 class="text-xl font-bold w-full flex justify-between">
+            日期
+            <small class="text-red-500 text-right" v-if="info.choose_Date === '' && is_Search">
+              ★ 請確實填寫
+            </small>
+          </h1>
         <Calendar 
             class="w-full" 
             :showIcon= "true" 

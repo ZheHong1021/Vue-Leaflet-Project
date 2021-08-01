@@ -79,15 +79,41 @@
       </form>
 
 
-      <div class="w-3/4 h-auto p-4 my-2 rounded border bg-yellow-200">
+      <!-- <div class="w-3/4 h-auto p-4 my-2 rounded border bg-yellow-200">
         <div class="text-lg font-bold text-center w-full">
           <div v-if="!object_isEmpty(result.odfare) && !object_isEmpty(result.timeTable)  && isLoading === false" >
-            
-          </div>
-
+            </div>
           <div v-else-if="isLoading === true">載入中</div>
           <div v-else>歡迎查詢~!!</div>
         </div>
+      </div> -->
+
+      <div v-if="!object_isEmpty(result.odfare) && !object_isEmpty(result.timeTable)  && isLoading === false" >
+
+       <div class="w-full">
+        <DataTable :value="result.timeTable" :paginator="true" :rows="10"
+              currentPageReportTemplate="目前顯示 {first} / {last} ，查詢總車班量: {totalRecords}"
+              paginatorTemplate="CurrentPageReport PrevPageLink PageLinks NextPageLink"
+              responsiveLayout="scroll"
+              
+            >
+            <Column header="車次編號">
+              <template #body="slotProps">
+                  <h1>{{slotProps.data.DailyTrainInfo.TrainNo}}</h1>
+                <!-- 透過下面所定義的reactive來去抓取相對應的車種名稱 -->
+                  <h1>{{ trainType[slotProps.data.DailyTrainInfo.TrainTypeCode] }}</h1>
+              </template>
+            </Column>
+            <Column field="OriginStopTime.DepartureTime" header="出發時間"></Column>
+            <Column field="DestinationStopTime.ArrivalTime" header="到站時間"></Column>
+            <Column header="行駛時間">
+                <template #body="slotProps">
+                  <h1>{{ diff_DriveTime(slotProps.data.OriginStopTime.DepartureTime, slotProps.data.DestinationStopTime.ArrivalTime) }}</h1>                  
+                </template>
+            </Column>
+           
+        </DataTable>    
+      </div>
       </div>
 
       </section>
@@ -96,15 +122,20 @@
 <script>
 import {onMounted, reactive, ref} from '@vue/runtime-core'
 import { useStore } from 'vuex' // Composition API
+import { get_Train_Odfare, get_Train_TimeTable } from "../api/api.js"; 
 import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
-import { get_Train_Odfare, get_Train_TimeTable } from "../api/api.js"; 
 import Calendar from 'primevue/calendar';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+
 export default {
    components: {
      Dropdown: Dropdown,
      Button: Button,
     Calendar: Calendar,
+    DataTable: DataTable,
+    Column: Column,
     },
 
     setup(){
@@ -119,6 +150,9 @@ export default {
         timeTable: {},
       })
 
+      const trainType = reactive({
+        1: '太魯閣', 2: '普悠瑪', 3: '自強', 4: '莒光', 5: '復興', 6: '區間', 7: '普快', 10: '區間快'
+      })
 
       const isLoading = ref(false)
       const is_Search = ref(false) // 是否查詢
@@ -157,7 +191,6 @@ export default {
             result.odfare = response[0].data.ODFares;
             result.timeTable = response[1].data;
         })
-
           //  Loading Animation
           isLoading.value = true
           if( result.odfare && result.timeTable ){
@@ -168,9 +201,9 @@ export default {
       }
     }
 
+
      const dateSelect = (date)=>{
       const new_date = new Date(date);
-      // console.log(new_date.getFullYear());
       const year = new_date.getFullYear()
       // 月份跟日期必須以 [mm-dd]的方式呈現
       const month = (new_date.getMonth() + 1) < 10 ? `0${new_date.getMonth() + 1}` : new_date.getMonth() + 1;
@@ -187,7 +220,18 @@ export default {
     }
 
 
-      return {info, result, object_isEmpty, is_Search, isLoading, Search_Info, dateSelect}
+    const diff_DriveTime = (O_Time, D_Time)=>{
+      const _startTime = O_Time.split(":");
+      const _endTime = D_Time.split(":");
+      let startDate = new Date(0, 0, 0, _startTime[0], _startTime[1], 0);
+      let EndDate = new Date(0, 0, 0, _endTime[0], _endTime[1], 0);
+      EndDate.setHours(EndDate.getHours() - startDate.getHours());
+      EndDate.setMinutes(EndDate.getMinutes() - startDate.getMinutes());
+      return EndDate.getHours() + "小時" + EndDate.getMinutes() + "分鐘";
+    }
+
+
+      return {info, result, trainType, is_Search, isLoading, object_isEmpty, Search_Info, dateSelect, diff_DriveTime}
     }
 }
 
