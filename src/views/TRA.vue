@@ -4,117 +4,157 @@
       <form 
         class="flex flex-col w-full items-center"  
         @submit.prevent='Search_Info'>
-
-      <div class="w-1/2 my-4">
-        <h1 class="text-xl font-bold w-full flex justify-between">
-          起站點
-          <small class="text-red-500 text-right" v-if="info.origin_Station_id === '' && is_Search">
-            ★ 請確實填寫
-          </small>
-        </h1>
-
-          <Dropdown 
-            class="w-full"
-            :class="(info.origin_Station_id === '' && is_Search) ? 'is_empty' : ''"
-            :filter="true"
-            filterPlaceholder="選擇車站"
-            v-model="info.origin_Station_id" 
-            :options="$store.state.module_Station.new_train" 
-            optionLabel="station" 
-            optionValue="id"
-            emptyFilterMessage="找不到該車站，請重新搜尋"
-            placeholder="選擇起站點" />
-      </div>
-
-      <div class="w-1/2 my-4">
-         <h1 class="text-xl font-bold w-full flex justify-between">
-          迄站點
-          <small class="text-red-500 text-right" v-if="info.destinate_Station_id === '' && is_Search">
-            ★ 請確實填寫
-          </small>
-        </h1>
-
-          <Dropdown 
-            class="w-full"
-            :class="(info.destinate_Station_id === '' && is_Search) ? 'is_empty' : ''"
-            :filter="true"
-            filterPlaceholder="選擇車站"
-            v-model="info.destinate_Station_id" 
-            :options="$store.state.module_Station.new_train" 
-            optionLabel="station" 
-            optionValue="id"
-            emptyFilterMessage="找不到該車站，請重新搜尋"
-            placeholder="選擇迄站點" />
-      </div>
+          <div class="w-1/2 my-4">
+            <h1 class="text-xl font-bold w-full flex justify-between">
+              起站點
+              <small class="text-red-500 text-right" v-if="info.origin_Station_id === '' && is_Search">
+                ★ 請確實填寫
+              </small>
+            </h1>
+              <Dropdown 
+                class="w-full"
+                :class="(info.origin_Station_id === '' && is_Search) ? 'is_empty' : ''"
+                :filter="true"
+                filterPlaceholder="選擇車站"
+                v-model="info.origin_Station_id" 
+                :options="$store.state.module_Station.new_train" 
+                optionLabel="name" 
+                optionValue="id"
+                optionGroupLabel="city" 
+                optionGroupChildren="station"
+                emptyFilterMessage="找不到該車站，請重新搜尋"
+                placeholder="選擇起站點">
+                  
+                  <template #optiongroup="slotProps">
+                      <div class="text-red-500 text-lg font-bold">
+                        <i class="fas fa-subway"></i>
+                        {{slotProps.option.city}}
+                        </div>
+                  </template>
+              </Dropdown>
+             
 
 
-      <div class="w-1/2 my-4">
-        <h1 class="text-xl font-bold w-full flex justify-between">
-            日期
-            <small class="text-red-500 text-right" v-if="info.choose_Date === '' && is_Search">
-              ★ 請確實填寫
-            </small>
-          </h1>
-        <Calendar 
-            class="w-full" 
-            :showIcon= "true" 
-            :showButtonBar="true" 
-            dateFormat="yy.mm.dd" 
-            v-model="info.choose_Date"
-            @date-select = "dateSelect"
-            />
-      </div>
+
+          </div>
+          <div class="w-1/2 my-4">
+            <h1 class="text-xl font-bold w-full flex justify-between">
+              迄站點
+              <small class="text-red-500 text-right" v-if="info.destinate_Station_id === '' && is_Search">
+                ★ 請確實填寫
+              </small>
+            </h1>
+              <Dropdown 
+                class="w-full"
+                :class="(info.destinate_Station_id === '' && is_Search) ? 'is_empty' : ''"
+                :filter="true"
+                filterPlaceholder="選擇車站"
+                v-model="info.destinate_Station_id" 
+                :options="$store.state.module_Station.new_train" 
+                 optionLabel="name" 
+                optionValue="id"
+                optionGroupLabel="city" 
+                optionGroupChildren="station"
+                emptyFilterMessage="找不到該車站，請重新搜尋"
+                placeholder="選擇迄站點" >
+                  <template #optiongroup="slotProps">
+                      <div class="text-red-500 text-lg font-bold">
+                        <i class="fas fa-subway"></i>
+                        {{slotProps.option.city}}
+                        </div>
+                  </template>
+              </Dropdown>
+          </div>
 
 
-      <div class="w-1/2 my-4">
-        <Button 
-            type="submit" 
-            label="Search" 
-            icon="pi pi-search" 
-            iconPos="right" 
-            class="p-button-text p-button-text w-full text-lg py-2 px-4 font-semibold rounded-lg shadow-md" 
-            :loading="isLoading" />
-      </div>
+          <div class="w-1/2 my-4">
+            <h1 class="text-xl font-bold w-full flex justify-between">
+                日期
+                <small class="text-red-500 text-right" v-if="info.choose_Date === '' && is_Search">
+                  ★ 請確實填寫
+                </small>
+              </h1>
+            <Calendar 
+                class="w-full" 
+                :showIcon= "true" 
+                :showButtonBar="true" 
+                dateFormat="yy.mm.dd" 
+                v-model="info.choose_Date"
+                @date-select = "dateSelect"
+                />
+          </div>
 
+
+          <div class="w-1/2 my-4">
+            <Button 
+                type="submit" 
+                label="Search" 
+                icon="pi pi-search" 
+                iconPos="right" 
+                class="p-button-text p-button-text w-full text-lg py-2 px-4 font-semibold rounded-lg shadow-md" 
+                :loading="isLoading" />
+          </div>
       </form>
 
+    <!-- 發現API沒抓到資料，代表並無行駛兩站之間的列車 -->
+    <div class="text-lg font-bold" v-if="is_Search === true && isLoading === false && (object_isEmpty(result.timeTable) || object_isEmpty(result.odfare))">查無資料</div>
+    <div class="text-lg font-bold" v-else-if="isLoading === true">載入中...</div>
+    <div class="text-lg font-bold" v-else>歡迎查詢~!!</div>
 
-      <!-- <div class="w-3/4 h-auto p-4 my-2 rounded border bg-yellow-200">
-        <div class="text-lg font-bold text-center w-full">
-          <div v-if="!object_isEmpty(result.odfare) && !object_isEmpty(result.timeTable)  && isLoading === false" >
-            </div>
-          <div v-else-if="isLoading === true">載入中</div>
-          <div v-else>歡迎查詢~!!</div>
-        </div>
-      </div> -->
-
-      <div v-if="!object_isEmpty(result.odfare) && !object_isEmpty(result.timeTable)  && isLoading === false" >
-
-       <div class="w-full">
+    <!-- Dialog -->
+    <Dialog 
+    v-if="isLoading === false && !object_isEmpty(result.timeTable)"
+    v-model:visible="is_ShowDialog" 
+    :breakpoints="{'960px': '75vw', '640px': '100vw'}" 
+    :style="{width: '50vw'}">
+        <!-- Header -->
+         <template #header>
+          <h3 class="text-lg font-bold">
+              {{ info.choose_Date }} 
+              {{ result.timeTable[0].OriginStopTime.StationName.Zh_tw }}
+              <i class="fas fa-arrow-circle-right"></i>
+              {{ result.timeTable[0].DestinationStopTime.StationName.Zh_tw }} 
+          </h3>
+        </template>
+      
+      <!-- Body -->
+        <div class="w-full">
         <DataTable :value="result.timeTable" :paginator="true" :rows="10"
-              currentPageReportTemplate="目前顯示 {first} / {last} ，查詢總車班量: {totalRecords}"
+              :pageLinkSize = 4
+              currentPageReportTemplate="目前顯示 {first} / {last} ，總車班數量: {totalRecords}"
               paginatorTemplate="CurrentPageReport PrevPageLink PageLinks NextPageLink"
               responsiveLayout="scroll"
-              
-            >
+          >
             <Column header="車次編號">
               <template #body="slotProps">
                   <h1>{{slotProps.data.DailyTrainInfo.TrainNo}}</h1>
                 <!-- 透過下面所定義的reactive來去抓取相對應的車種名稱 -->
-                  <h1>{{ trainType[slotProps.data.DailyTrainInfo.TrainTypeCode] }}</h1>
+                  <h1>{{ Odfare_Info.trainType[slotProps.data.DailyTrainInfo.TrainTypeCode] }}</h1>
               </template>
             </Column>
+
             <Column field="OriginStopTime.DepartureTime" header="出發時間"></Column>
             <Column field="DestinationStopTime.ArrivalTime" header="到站時間"></Column>
+
             <Column header="行駛時間">
                 <template #body="slotProps">
                   <h1>{{ diff_DriveTime(slotProps.data.OriginStopTime.DepartureTime, slotProps.data.DestinationStopTime.ArrivalTime) }}</h1>                  
                 </template>
             </Column>
-           
+
+            <Column header="車票價格">
+                <template #body="slotProps">
+                     <div v-for="(item, index) in search_Odfare(slotProps.data.DailyTrainInfo.Direction,slotProps.data.DailyTrainInfo.TrainTypeCode)" :key="index">
+                       <span>{{ Odfare_Info.FareClass[item.FareClass] }}票: {{item.Price}}</span>
+                     </div>
+                </template>
+            </Column>
+
         </DataTable>    
       </div>
-      </div>
+
+    </Dialog>
+
 
       </section>
 
@@ -128,6 +168,7 @@ import Button from 'primevue/button';
 import Calendar from 'primevue/calendar';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import Dialog from 'primevue/dialog';
 
 export default {
    components: {
@@ -136,27 +177,32 @@ export default {
     Calendar: Calendar,
     DataTable: DataTable,
     Column: Column,
+    Dialog: Dialog,
     },
 
     setup(){
+      const store = useStore()
       const info = reactive({
         'origin_Station_id' : "",
         'destinate_Station_id' : "",
         'choose_Date': "",
       });
-
       const result = reactive({
         odfare: {},
         timeTable: {},
       })
 
-      const trainType = reactive({
-        1: '太魯閣', 2: '普悠瑪', 3: '自強', 4: '莒光', 5: '復興', 6: '區間', 7: '普快', 10: '區間快'
-      })
+      const Odfare_Info = reactive({
+        trainType: {1: '太魯閣', 2: '普悠瑪', 3: '自強', 4: '莒光', 5: '復興', 6: '區間', 7: '普快', 10: '區間快'},
+        FareClass: {1: '成人', 2: '學生', 3: '孩童', 4: '敬老', 5: '愛心', 6: '愛心孩童', 7: '愛心優待/愛心陪伴', 8: '團體', 9: '軍警'},
+      }) 
 
       const isLoading = ref(false)
       const is_Search = ref(false) // 是否查詢
-      const store = useStore()
+      const is_ShowDialog = ref(false)
+
+      // OverlayPanel
+      const overlay_panel = ref();
 
     // 讀取 API
     onMounted(()=>{
@@ -169,7 +215,6 @@ export default {
         }, 1500);
       }
     })
-
 
     const Search_Info = async ()=>{
       // 確定是否點擊查詢
@@ -191,16 +236,19 @@ export default {
             result.odfare = response[0].data.ODFares;
             result.timeTable = response[1].data;
         })
+
           //  Loading Animation
           isLoading.value = true
           if( result.odfare && result.timeTable ){
             setTimeout(() => {
+              // 載入成功後，關閉載入動畫並開啟 Dialog
               isLoading.value = false
+              is_ShowDialog.value = true
             }, 1000);
+
           }
       }
     }
-
 
      const dateSelect = (date)=>{
       const new_date = new Date(date);
@@ -231,7 +279,30 @@ export default {
     }
 
 
-      return {info, result, trainType, is_Search, isLoading, object_isEmpty, Search_Info, dateSelect, diff_DriveTime}
+    const toggle = (event)=> {
+      overlay_panel.value.toggle(event);
+    }
+
+
+    const search_Odfare = (Direction, TrainType)=>{
+      let return_Fare = []
+      Object.keys(result.odfare).forEach((key) => {
+          const odfare_Direct = result.odfare[key].Direction
+          const odfare_TrainType = result.odfare[key].TrainType
+          if(odfare_Direct == Direction && odfare_TrainType == TrainType){
+            return_Fare = result.odfare[key].Fares
+          }
+      });
+
+      return return_Fare
+    }
+
+
+    // Composition API Return
+      return {
+        info, result, Odfare_Info, is_ShowDialog, is_Search, isLoading, overlay_panel,
+        toggle, object_isEmpty, Search_Info, dateSelect, diff_DriveTime, search_Odfare
+      }
     }
 }
 
