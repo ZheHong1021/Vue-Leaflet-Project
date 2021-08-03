@@ -62,7 +62,7 @@ const moduleStation = {
 
 
         // 火車想要做GroupDropDown，所以必須列出該車站的所在城市，其他種類則不用
-        if( category === 'train'){
+        if( payload === 'train'){
           let city_include = []
           Object.keys(category).forEach(function (key) {
             const city_name = category[key].LocationCity.substr(0,2)
