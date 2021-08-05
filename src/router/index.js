@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import TRA from '../views/TRA.vue'
 import THSR from '../views/THSR.vue'
+import Bus from '../views/Bus.vue'
 
 const routes = [
   {
@@ -24,6 +25,14 @@ const routes = [
     path: '/thsr',
     name: 'THSR',
     component: THSR,
+    meta: {
+      title: '台灣安心旅遊通',
+    }
+  },
+  {
+    path: '/bus',
+    name: 'Bus',
+    component: Bus,
     meta: {
       title: '台灣安心旅遊通',
     }

@@ -19,7 +19,6 @@ export default {
 
     onBeforeMount(async () => {
        await get_Train_Station().then((res)=>{
-          console.log(res);
         react.stations = res.data;
         react.stations.map(item => leaflet.marker(new leaflet.LatLng(item.StationPosition.PositionLat, item.StationPosition.PositionLon))  // 新增Marker
           .bindPopup(`<p>經度: ${item.StationPosition.PositionLat}</p><p>緯度: ${item.StationPosition.PositionLon}</p>`))  // 資訊視窗

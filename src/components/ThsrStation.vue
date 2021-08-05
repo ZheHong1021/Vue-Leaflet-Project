@@ -19,7 +19,6 @@ export default {
 
     onBeforeMount(async () => {
           await get_Thsr_Station().then((res)=>{
-            console.log(res);
             react.stations = res.data;
             
             react.stations.map(item => leaflet.marker(
@@ -31,7 +30,7 @@ export default {
               .bindPopup(`<p>經度: ${item.StationPosition.PositionLat}</p><p>緯度: ${item.StationPosition.PositionLon}</p>`))  // 資訊視窗
               .forEach(item => store.state.module_Marker.clusterMarker.addLayer(item));  // 把marker加入 L.markerClusterGroup中
           }).catch((err)=>{
-            console.log('連線異常:' + err);
+              console.log('連線異常:' + err);
           });
 
           store.commit('module_Station/setHighSpeedStation', react.stations)

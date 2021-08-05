@@ -32,6 +32,12 @@ const PTX_Thsr_TimeTable = axios.create({
 })
 
 
+const PTX_Bus_Route = axios.create({
+    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Bus/Route/City',
+    headers: useAuthHeader()
+})
+
+
 // 得到台鐵的站點資訊(使用到的位置: /components/TrainStation)
 export const get_Train_Station = () => PTX_Train_Station.get(`/`);
 
@@ -49,3 +55,6 @@ export const get_Train_TimeTable = (data) => PTX_Train_TimeTable.get(`/${data.Or
 
 // 得到高鐵的時刻表(使用到的位置: /views/THSR)
 export const get_Thsr_TimeTable = (data) => PTX_Thsr_TimeTable.get(`/${data.OriginStationID}/to/${data.DestinationStationID}/${data.choose_Date}?$format=JSON`);
+
+// 得到高鐵的時刻表(使用到的位置: /views/Bus)
+export const get_Bus_Route = (data) => PTX_Bus_Route.get(`/${data}?$format=JSON`);

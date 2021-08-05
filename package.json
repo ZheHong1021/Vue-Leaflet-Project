@@ -24,6 +24,7 @@
     "primevue": "^3.6.0",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2",
     "vue": "^3.0.0",
+    "vue-loading-overlay": "^4.0.3",
     "vue-router": "^4.0.0-0",
     "vuex": "^4.0.0-0"
   },
