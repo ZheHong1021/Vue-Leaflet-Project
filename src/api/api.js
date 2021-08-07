@@ -1,7 +1,6 @@
 import axios from 'axios';
 import useAuthHeader from '@/utilities/useAuthHeader'   // AuthKey
 
-
 const PTX_Train_Station = axios.create({
     baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Rail/TRA/Station',
     headers: useAuthHeader()
@@ -31,9 +30,13 @@ const PTX_Thsr_TimeTable = axios.create({
     headers: useAuthHeader()
 })
 
-
 const PTX_Bus_Route = axios.create({
     baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Bus/Route/City',
+    headers: useAuthHeader()
+})
+
+const PTX_Bus_StopOfRoute = axios.create({
+    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Bus/StopOfRoute/City',
     headers: useAuthHeader()
 })
 
@@ -56,5 +59,10 @@ export const get_Train_TimeTable = (data) => PTX_Train_TimeTable.get(`/${data.Or
 // 得到高鐵的時刻表(使用到的位置: /views/THSR)
 export const get_Thsr_TimeTable = (data) => PTX_Thsr_TimeTable.get(`/${data.OriginStationID}/to/${data.DestinationStationID}/${data.choose_Date}?$format=JSON`);
 
-// 得到高鐵的時刻表(使用到的位置: /views/Bus)
-export const get_Bus_Route = (data) => PTX_Bus_Route.get(`/${data}?$format=JSON`);
+// 得到公車路線資訊(使用到的位置: /views/Bus)
+const select_Bus_Route = 'RouteUID, RouteName, SubRoutes, BusRouteType, DepartureStopNameZh, DestinationStopNameZh';
+export const get_Bus_Route = (data) => PTX_Bus_Route.get(`/${data}?$format=JSON&$select=${select_Bus_Route}`);
+
+// 得到公車路線上的各個站點(使用到的位置: /views/Bus)
+const select_Bus_StopOfRoute = 'Direction, Stops';
+export const get_Bus_StopOfRoute = (data) => PTX_Bus_StopOfRoute.get(`/${data.city}?$format=JSON&$select=${select_Bus_StopOfRoute}&$filter=RouteUID eq '${data.routeUid}'`);

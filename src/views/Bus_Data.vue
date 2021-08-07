@@ -33,27 +33,40 @@
         <span class="p-ml-2 p-text-bold font-bold">回上一頁</span>
     </Button>
 
-              <div v-if="result.total_Routes.length > 0">
+        <DataTable 
+          class="w-full"
+          :value="result.total_Routes" 
+          responsiveLayout="scroll"
+          v-model:filters="filters1"
+          :globalFilterFields="['DepartureStopNameZh', 'DestinationStopNameZh', 'RouteName.Zh_tw']">
+               <template #header>
+                        <span class="p-input-icon-left ">
+                            <i class="pi pi-search" />
+                            <InputText v-model="filters1['global'].value" placeholder="Keyword Search" />
+                        </span>
+                </template>
 
-                  <Accordion class="w-full" @tab-open="toggle_Route">
-                      <!-- <AccordionTab v-for="(item, index) in result.total_Routes" :key="index"> -->
-                      <AccordionTab v-for="index in 10" :key="index">
+               <template #empty>
+                    找不到所搜尋的資訊
+                </template>
 
-                        <template #header>
-                          <i class="fas fa-bus"></i>
+              <Column header="路線名稱">
+                 <template #body="slotProps">
+                      <div class="mx-2 mr-6">{{slotProps.data.RouteName.Zh_tw}}
 
-                          <span class="mx-2 mr-6">{{ result.total_Routes[curretPage * 10 + index].RouteName.Zh_tw  }}</span>
-                        
-                         <span>
-                            {{result.total_Routes[curretPage * 10 + index].DepartureStopNameZh }}  
-                            <i class="fas fa-arrow-circle-right text-lg"></i>
-                            {{result.total_Routes[curretPage * 10 + index].DestinationStopNameZh  }}
-                          </span>
-
-
-                        </template>
-                        
-                        <!-- Body -->
+                            <Accordion class="w-full" @tab-open="toggle_Route(slotProps.data.RouteUID)">
+                          <AccordionTab>
+                            <template #header>
+                              <i class="fas fa-bus"></i>
+                              <span class="mx-2 mr-6">{{slotProps.data.RouteName.Zh_tw}}</span>
+                              <span>
+                                {{slotProps.data.DepartureStopNameZh }}  
+                                <i class="fas fa-arrow-circle-right text-lg"></i>
+                                {{slotProps.data.DestinationStopNameZh  }}
+                              </span>
+                            </template>
+                            
+                            <!-- Body -->
                             <div v-show="result.bus_stop.length !== 0">
                                 <div class="w-full flex justify-center mb-4 mt-2">
                                   <Button @click="get_StopOfRoute(0)" label="順行" class="font-bold p-button-raised"
@@ -62,17 +75,19 @@
                                     :class="choose_Info.direction !== 1 ? 'p-button-text' : ''" />
                                 </div>
 
-
                               <div v-for="(stop, index) in result.bus_stop" :key="index">
                                   <h1>{{ stop.StopName.Zh_tw }}</h1>
                               </div>
+
                             </div>
+
                           </AccordionTab>
                     </Accordion>
 
-
-              <Paginator :rows="10" :totalRecords="result.total_Routes.length" :rowsPerPageOptions="[10,20,30]" @page="onPage($event)"></Paginator>
-              </div>
+                      </div>
+                </template>
+              </Column>
+        </DataTable>
 
   </section>
 
@@ -86,10 +101,12 @@ import { get_Bus_Route, get_Bus_StopOfRoute } from "../api/api.js";
 import Loading from 'vue-loading-overlay';
 import 'vue-loading-overlay/dist/vue-loading.css';
 import Button from 'primevue/button';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
 import Accordion from 'primevue/accordion';
 import AccordionTab from 'primevue/accordiontab';
 import {FilterMatchMode, FilterOperator} from 'primevue/api';
-import Paginator from 'primevue/paginator';
+import InputText from 'primevue/inputtext';
 
 export default {
   components: {
@@ -97,7 +114,9 @@ export default {
     Button: Button,
     Accordion: Accordion,
     AccordionTab: AccordionTab,
-    Paginator: Paginator,
+    DataTable: DataTable,
+    Column: Column,
+    InputText: InputText,
   },
   setup(){
       const citys = reactive([
@@ -143,8 +162,8 @@ export default {
         bus_stop: [],
       })
 
+  
 
-      const curretPage = ref( 0 );
       
       // Loading Config
       const loading_Config = reactive({
@@ -212,8 +231,7 @@ export default {
   
 
       // 匯入該路線API資訊
-      const toggle_Route = async (event)=>{
-        const uid = result.total_Routes[event.index].RouteUID
+      const toggle_Route = async (uid)=>{
         console.log('uid=' + uid);
         // 確認是否重複點選，重複: ""(代表關閉目前 Accordion)，不重複: uid(代表開啟了新的 Accordion)
           choose_Info.route = choose_Info.route !== uid ? uid : "";
@@ -235,7 +253,6 @@ export default {
                 }
             })
           }
-
       }
 
 
@@ -263,17 +280,9 @@ export default {
       }
 
 
-        const onPage = (event)=>{
-            console.log(event);
-            curretPage.value = event.page;
-        }
 
-        
-
-
-
-    return {citys, loading_Config, is_Search, choose_Info, result, filters1, curretPage,
-             Search_Bus_Route, goBackTotal, toggle_Route, get_StopOfRoute, onPage}
+    return {citys, loading_Config, is_Search, choose_Info, result, filters1,
+             Search_Bus_Route, goBackTotal, toggle_Route, get_StopOfRoute}
   }
 
 }
