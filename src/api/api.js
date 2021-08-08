@@ -1,6 +1,8 @@
 import axios from 'axios';
 import useAuthHeader from '@/utilities/useAuthHeader'   // AuthKey
 
+// const CSRF_TOKEN = document.cookie.match(new RegExp(`XSRF-TOKEN=([^;]+)`))[1];
+
 const PTX_Train_Station = axios.create({
     baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Rail/TRA/Station',
     headers: useAuthHeader()
@@ -40,6 +42,11 @@ const PTX_Bus_StopOfRoute = axios.create({
     headers: useAuthHeader()
 })
 
+const PTX_Bus_EstimatedTimeOfArrival = axios.create({
+    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Bus/EstimatedTimeOfArrival/City',
+    headers: useAuthHeader()
+})
+
 
 // 得到台鐵的站點資訊(使用到的位置: /components/TrainStation)
 export const get_Train_Station = () => PTX_Train_Station.get(`/`);
@@ -66,3 +73,7 @@ export const get_Bus_Route = (data) => PTX_Bus_Route.get(`/${data}?$format=JSON&
 // 得到公車路線上的各個站點(使用到的位置: /views/Bus)
 const select_Bus_StopOfRoute = 'Direction, Stops';
 export const get_Bus_StopOfRoute = (data) => PTX_Bus_StopOfRoute.get(`/${data.city}?$format=JSON&$select=${select_Bus_StopOfRoute}&$filter=RouteUID eq '${data.routeUid}'`);
+
+// 得到公車路線上的到站估計時間(使用到的位置: /views/Bus)
+const select_Bus_EstimatedTimeOfArrival = 'StopUID, Direction, EstimateTime, PlateNumb, IsLastBus, StopName';
+export const get_Bus_EstimatedTimeOfArrival = (data) => PTX_Bus_EstimatedTimeOfArrival.get(`/${data.city}?$format=JSON&$select=${select_Bus_EstimatedTimeOfArrival}&$filter=RouteUID eq '${data.routeUid}'`);
