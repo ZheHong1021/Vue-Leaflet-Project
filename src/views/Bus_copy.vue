@@ -1,4 +1,5 @@
 <template>
+
     <loading v-model:active="loading_Config.isLoading"
       :is-full-page="loading_Config.isFullPage"
       :loader="loading_Config.loader"
@@ -15,12 +16,15 @@
         </div>
   </section>
 
+
+
   <section id="Single_City" class="w-full flex flex-col justify-center items-center" v-show = "goToSingleCity === true">
     <h1 class="text-xl font-bold my-2">{{ choose_Info.city }}</h1>
       <Button type="button" class="p-button-outlined p-button-success my-4" @click="goBackTotalCity">
           <i class="fas fa-reply-all text-black mr-3"></i>
           <span class="p-ml-2 p-text-bold font-bold">回上一頁</span>
       </Button>
+
     <div class="my-3" v-if="api_Response.total_Routes.length > 0">
         <Accordion class="w-full" @tab-open="open_Route" @tab-close="close_Route">
             <AccordionTab v-for="(_,index) in currentPageRow" :key="index">
@@ -37,20 +41,17 @@
                         
               <!-- Body -->
                 <div v-show="api_Response.bus_stop.length !== 0">
-                  <div id="route_Header" class="sticky" style="top: 0">
-                      <span class="rounded p-2 bg-purple-700 text-white font-bold text-lg " >下次更新時間: {{update_Count}}</span>
-                      <span class="rounded p-2 bg-red-700 text-white font-bold text-lg ml-3 cursor-pointer" @click="refresh_Route_Info(choose_Info.direction)">重新整理</span>
-                      <div class="w-full flex justify-center mb-4 mt-2">
-                          <Button @click="refresh_Route_Info(0)" :label="'往' + api_Response.total_Routes[currentPage * 10 + index].DestinationStopNameZh" class="font-bold p-button-raised"
-                            :class="choose_Info.direction !== 0 ? 'p-button-text' : ''" />
-                          <Button @click="refresh_Route_Info(1)" :label="'往' + api_Response.total_Routes[currentPage * 10 + index].DepartureStopNameZh" class="font-bold p-button-raised"
-                            :class="choose_Info.direction !== 1 ? 'p-button-text' : ''" />
-                      </div>
-                  </div>
-
+                    <div class="w-full flex justify-center mb-4 mt-2">
+                      <Button @click="refresh_Route_Info(0)" :label="'往' + api_Response.total_Routes[currentPage * 10 + index].DestinationStopNameZh" class="font-bold p-button-raised"
+                        :class="choose_Info.direction !== 0 ? 'p-button-text' : ''" />
+                      <Button @click="refresh_Route_Info(1)" :label="'往' + api_Response.total_Routes[currentPage * 10 + index].DepartureStopNameZh" class="font-bold p-button-raised"
+                        :class="choose_Info.direction !== 1 ? 'p-button-text' : ''" />
+                    </div>
 
                     <!-- 一定要有該Object才能顯示，否則會 Error -->
-                    <div v-if="!object_isEmpty(esimate_Info) && loading_Config.isLoading === false">
+                    <div v-if="!object_isEmpty(esimate_Info)">
+                      <span class="rounded p-2 bg-purple-700 text-white font-bold sticky text-lg" style="top: 0">下次更新時間: {{update_Count}}</span>
+                      
                       <div v-for="(stop, index) in api_Response.bus_stop" :key="index">
                           <!-- 預估到站時間( 1 min > : 進站中； 3 min >: 準備進站； 3 min<: 正常顯示時間； 沒有預估時間: 顯示目前站點狀況 ) -->
                           <h1 class="my-4">
@@ -90,17 +91,13 @@
 
 <script>
 import { reactive, ref } from '@vue/reactivity'
-import { get_Bus_Route, get_Bus_StopOfRoute, get_Bus_DisplayStopOfRoute, get_Bus_EstimatedTimeOfArrival } from "../api/api.js"; 
+import { get_Bus_Route, get_Bus_StopOfRoute, get_Bus_EstimatedTimeOfArrival } from "../api/api.js"; 
 import Loading from 'vue-loading-overlay';
 import 'vue-loading-overlay/dist/vue-loading.css';
 import Button from 'primevue/button';
 import Accordion from 'primevue/accordion';
 import AccordionTab from 'primevue/accordiontab';
 import Paginator from 'primevue/paginator';
-import { useStore } from 'vuex' // Composition API
-import L from 'leaflet'
-import { onEachFeature } from '../utilities/geoJSON'
-
 
 export default {
   components: {
@@ -111,8 +108,6 @@ export default {
     Paginator: Paginator,
   },
   setup(){
-      const store = useStore();
-
       const citys = reactive([
         {name:'臺北市', en:'Taipei', isActive: false}, {name:'新北市', en:'NewTaipei', isActive: false}, {name:'桃園市', en:'Taoyuan', isActive: false},
         {name:'臺中市', en:'Taichung', isActive: false},{name:'臺南市', en:'Tainan', isActive: false}, {name:'高雄市', en:'Kaohsiung', isActive: false}, 
@@ -161,16 +156,17 @@ export default {
         isFullPage: true, // 全螢幕
         color: "#000",
         loader: 'dots', // Loading icon:  spineer / dots / bars,
+        time: 1500 // 動畫時間: 1.5s
       })
       
 
       // Loading Animation
-      const Show_Loading = ()=>{
+      const Show_Loading = (goTo)=>{
         loading_Config.isLoading = true;
           setTimeout(() => {
               loading_Config.isLoading = false;
-              goToSingleCity.value = !goToSingleCity.value;
-          }, 1500);
+              goToSingleCity.value = goTo === 'Single' ? true : false;
+          }, loading_Config.time);
       }
 
 
@@ -178,7 +174,8 @@ export default {
           const city_name = citys[index].name;
           const city_name_en = citys[index].en;
           citys[index].isActive = true;
-          Show_Loading()
+          
+          Show_Loading('Single')
 
           await get_Bus_Route(city_name_en)
             .then( (res)=>{
@@ -194,14 +191,14 @@ export default {
 
 
       const goBackTotalCity = ()=>{
-          Show_Loading();
+          Show_Loading('Total');
           choose_Info.city = '';
           choose_Info.city_en = '';
           api_Response.total_Routes = [];
           clearCityActive()
       }
 
-      // 點擊單一縣市時產生的效果清除
+      
       const clearCityActive = ()=>{
           citys.forEach((city)=>{
             city.isActive = false;
@@ -210,11 +207,6 @@ export default {
 
       // [0:'正常',1:'尚未發車',2:'交管不停靠',3:'末班車已過',4:'今日未營運']   
       const StopStatus  = reactive(['正常', '尚未發車', '暫不停靠', '末班車已過', '今日停駛'])
-      
-      // 因為下列這些縣市的公車，會有多種子路線導致很難顯示，則使用另一個API (DisplayStopOfRoute)
-      const AllowDisplayStop = reactive(['Taipei', 'Tainan', 'NewTaipei', 'Taoyuan', 'Taichung'])
-
-    
 
       // 開啟 Accordion，匯入該路線API資訊(之後就不用一直呼叫)
       const open_Route = async (event)=>{
@@ -222,22 +214,19 @@ export default {
         const uid = api_Response.total_Routes[currentPage.value*10 + event.index].RouteUID
         // 紀錄選擇的路線
         choose_Info.route = uid 
-          const api_choose  = AllowDisplayStop.includes(choose_Info.city_en) ? get_Bus_DisplayStopOfRoute : get_Bus_StopOfRoute;
-              await api_choose( {city: choose_Info.city_en, routeUid: choose_Info.route} )
+            const request = {city: choose_Info.city_en, routeUid: choose_Info.route}
+              await get_Bus_StopOfRoute(request)
               .then( (res)=>{
                 // 用一個 reactive來保存
                 api_Response.total_Stops = res.data;
+
                 // 起始載入，行駛方向為順向
                 refresh_Route_Info(0);
 
-                // 秀站點座標
-                setTimeout(show_Bus_Marker(), 1000)
-                
-
-              }).catch( (err)=>{
-                  console.log('連線異常:' + err);
-                  error_Request()
-              })
+            }).catch( (err)=>{
+                console.log('連線異常:' + err);
+                error_Request()
+            })
       }
 
       // 關閉 Accordion
@@ -247,18 +236,17 @@ export default {
         clearInterval(updateInterval_Count.value)
       }
 
-      
-
      
 
 
-      // 這邊因為每個路線都會有數個子路線，而我們要將每個子路線的行駛方向所經過的站點都抓近來
+        // 這邊因為每個路線都會有數個子路線，而我們要將每個子路線的行駛方向所經過的站點都抓近來
       const get_StopOfRoute = (direction)=>{
             choose_Info.direction = direction;
             let maxStopLength = 0;
             let max_index = 0
             // 子路線數量
             let SubRouteNum = Object.keys(api_Response.total_Stops).length;
+
             // 預估時間
             for(let index = 0; index< SubRouteNum ; index++){
               // 且這子路線的行駛方向要跟 direction相同
@@ -274,123 +262,60 @@ export default {
             }
             // 最後將站點最多的留下來(而這邊還有部分班次的特殊站點需要去做處理)
             api_Response.bus_stop = api_Response.total_Stops[max_index].Stops
+
             // 這邊設定 1s再去 get_EstimatedTimeOfArrival函式處理資料，否則會有 error
             setTimeout(()=>{
-              get_EstimatedTimeOfArrival({city: choose_Info.city_en, routeUid: choose_Info.route})
+              const request = {city: choose_Info.city_en, routeUid: choose_Info.route}
+              get_EstimatedTimeOfArrival(request);
             }, 1000)
       }
 
-
-      // Display為整理好的總路線站點，而上面沒Display則為沒整理的，所以我們要幫忙整理
-      const get_DisplayStopOfRoute = (direction)=>{
-        // 路線數量
-        let SubRouteNum = Object.keys(api_Response.total_Stops).length;
-
-        // 預估時間
-        for(let index = 0; index< SubRouteNum ; index++){
-          // 且這子路線的行駛方向要跟 direction相同
-            if(api_Response.total_Stops[index].Direction === direction){
-              api_Response.bus_stop = api_Response.total_Stops[index].Stops
-            }
-          }
-     
-          get_EstimatedTimeOfArrival({city: choose_Info.city_en, routeUid: choose_Info.route})
-      }
-
-
-
       const refresh_Route_Info = (direction)=>{
-        // 先刷新資料
-        AllowDisplayStop.includes(choose_Info.city_en) ? get_DisplayStopOfRoute(direction) :  get_StopOfRoute(direction);
-               
         loading_Config.isLoading = true;
-        choose_Info.direction = direction;
+        setTimeout(()=>{
+          loading_Config.isLoading = false;
+          // 一開始都先打開並刷新計時
+          get_StopOfRoute(direction);
+          clearInterval(updateInterval.value)
+          clearInterval(updateInterval_Count.value)
+          update_Count.value = 15
 
-        // Loading Animation .5s
-          setTimeout(()=>{
-            // 確定真的預估時間有載入
-            if(!object_isEmpty(esimate_Info)){
-              loading_Config.isLoading = false;
-            
-              clearInterval(updateInterval.value)
-              clearInterval(updateInterval_Count.value)
-              update_Count.value = 15
-    
-              updateInterval_Count.value = setInterval(()=>{
-                  update_Count.value--;
-                  if(update_Count.value === 0) update_Count.value = 15
-              }, 1000)
-    
+          updateInterval_Count.value = setInterval(()=>{
+              update_Count.value--;
+              if(update_Count.value === 0 ){
+                update_Count.value = 15
+              }
+            }, 1000)
 
-              updateInterval.value = setInterval(()=>{
-                AllowDisplayStop.includes(choose_Info.city_en) ? get_DisplayStopOfRoute(direction) :  get_StopOfRoute(direction)
-              }, 15000);
-            }
-          }, 500)
+          updateInterval.value = setInterval(() => {
+              get_StopOfRoute(direction);
+          }, 15000)
+        }, 500)
+
+
       }
-
-  
-
-
-      const show_Bus_Marker = ()=>{
-        let marker_PolyLine_arr = []
-        Object.entries(api_Response.bus_stop).forEach(([, value]) => {
-          marker_PolyLine_arr.push(new L.LatLng(value.StopPosition.PositionLat, value.StopPosition.PositionLon));
-          var geojsonFeature = {
-            "type": "Feature",
-            "properties": {
-              "name": `${value.StopSequence}_  ${value.StopName.Zh_tw}`,
-              'category': '公車',
-              "latitude": value.StopPosition.PositionLat,
-              "longitude": value.StopPosition.PositionLon,
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [value.StopPosition.PositionLon, value.StopPosition.PositionLat]
-            }
-          };
-          L.geoJSON(geojsonFeature, {
-            onEachFeature: onEachFeature,
-            pointToLayer: function (feature, latlng) {
-              return L.marker(latlng, {
-                icon: store.state.module_Marker.greenIcon
-              });
-            },
-          }).addTo(store.state.module_Map.map);
-        });
-
-        console.log(marker_PolyLine_arr);
-        store.state.module_Marker.polyLine_Bus = new L.Polyline(marker_PolyLine_arr, {
-            smoothFactor: 1,
-            className: 'bus_polyline'
-        }).addTo(store.state.module_Map.map);
-      }
-
-            
 
 
 
       // 將得到的 API新建成一個物件，利用站點的StopUID來去呼叫該站點的資訊(估計時間、車班號)
-      const get_EstimatedTimeOfArrival = async(request)=>{
-          await get_Bus_EstimatedTimeOfArrival(request)
+      const get_EstimatedTimeOfArrival = async(uid)=>{
+          await get_Bus_EstimatedTimeOfArrival(uid)
               .then( (res)=>{
                 Object.entries(res.data).forEach(([, value]) => {
-
-                  // 目前行駛(順行: 1；逆行: 0)；未行駛: 255
-                  if(value.Direction == choose_Info.direction || value.Direction == '255'){
-                    // 這邊提供的資料中，會有重複(多個子路線)站點資訊，而我們要抓目前最快到達車站的時間
-                    // 如果目前該站點資訊以記錄在 Object中，則必須以估計時間最短的為優先
-                      if( Object.prototype.hasOwnProperty.call(esimate_Info, value.StopUID) ){
-                        if(esimate_Info[value.StopUID] == 'underfined' || esimate_Info[value.StopUID].estimateTime < value.EstimateTime){
-                          return;
-                        }
-                      }
-                        esimate_Info[value.StopUID] = {
-                          plateNumb: value.PlateNumb, 
-                          estimateTime: value.EstimateTime,
-                          stopStatus: value.StopStatus
-                        };
+                  
+                  // 這邊提供的資料中，會有重複(多個子路線)站點資訊，而我們要抓目前最快到達車站的時間
+                  // 如果目前該站點資訊以記錄在 Object中，則必須以估計時間最短的為優先
+                  
+                  if( Object.prototype.hasOwnProperty.call(esimate_Info, value.StopUID) ){
+                    if(esimate_Info[value.StopUID] == 'underfined'){
+                      return;
+                    }
                   }
+                    esimate_Info[value.StopUID] = {
+                      plateNumb: value.PlateNumb, 
+                      estimateTime: value.EstimateTime,
+                      stopStatus: value.StopStatus
+                    };
                 });
             }).catch( (err)=>{
                 console.log('連線異常:' + err);

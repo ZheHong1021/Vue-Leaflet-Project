@@ -1,3 +1,5 @@
+// import L from 'leaflet'
+// import { onEachFeature } from '@/utilities/geoJSON'
 
 export default {
     namespaced: true,
@@ -12,5 +14,6 @@ export default {
         set_InitialMap(state, payload){
             state.map = payload;
         },
+
     }
   }

@@ -10,7 +10,8 @@ const store = new Vuex.Store({
     module_Map: moduleMap,
     module_Marker: moduleMarker,
     module_Station: moduleStation,
-  }
+  },
+  
 })
 
 export default store;
