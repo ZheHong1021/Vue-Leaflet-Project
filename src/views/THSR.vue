@@ -135,8 +135,6 @@
       </div>
 
     </Dialog>
-
-
       </section>
 
 
@@ -233,9 +231,6 @@ export default {
           }
         }
  
-
-    
-
     const dateSelect = (date)=>{
       const new_date = new Date(date);
       // console.log(new_date.getFullYear());

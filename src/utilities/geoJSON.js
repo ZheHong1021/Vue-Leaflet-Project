@@ -19,7 +19,7 @@ export const  onEachFeature =(feature, layer)=>{
 function  makePopupContent (station){
     let return_html =     
     `<div>
-    <h2>${station.properties.name} - ${station.properties.category}</h2>
+    <h2>${station.properties.name}</h2>
     `
     return return_html;
 }
