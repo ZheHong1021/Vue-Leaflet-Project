@@ -95,7 +95,7 @@ const select_Bus_DisplayStopOfRoute = 'Direction, Stops';
 export const get_Bus_DisplayStopOfRoute = (data) => PTX_Bus_DisplayStopOfRoute.get(`/${data.city}?$format=JSON&$select=${select_Bus_DisplayStopOfRoute}&$filter=RouteUID eq '${data.routeUID}'`);
 
 // 得到公車路線上的到站估計時間(使用到的位置: /views/Bus)
-const select_Bus_EstimatedTimeOfArrival = 'StopUID, Direction, EstimateTime, PlateNumb, IsLastBus, StopName';
+const select_Bus_EstimatedTimeOfArrival = 'StopUID, Direction, PlateNumb, EstimateTime, NextBusTime, StopName';
 export const get_Bus_EstimatedTimeOfArrival = (data) => PTX_Bus_EstimatedTimeOfArrival.get(`/${data.city}?$format=JSON&$select=${select_Bus_EstimatedTimeOfArrival}&$filter=RouteUID eq '${data.routeUID}'`);
 
 

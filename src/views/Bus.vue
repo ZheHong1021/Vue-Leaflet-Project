@@ -62,7 +62,7 @@
                       </div>
                   </div>
                     <!-- 一定要有該Object才能顯示，否則會 Error -->
-                    <div v-if="!object_isEmpty(esimate_Arrival) && isLoading === false">
+                    <div v-if="object_isEmpty(esimate_Arrival) === false && isLoading === false">
                       <div v-for="(stop, index) in api_Response.bus_stop" :key="index">
                           <!-- 預估到站時間( 1 min > : 進站中； 3 min >: 準備進站； 3 min<: 正常顯示時間； 沒有預估時間: 顯示目前站點狀況 ) -->
                           <h1 class="my-4">
@@ -80,10 +80,17 @@
                               <span 
                                   v-else
                                   class="px-4 py-1 rounded text-white bg-gray-500">
-                                  {{ StopStatus[esimate_Arrival[stop.StopUID].stopStatus]}}
+                                  {{ esimate_Arrival[stop.StopUID].nextBusTime ? nextBusTimeConfig(esimate_Arrival[stop.StopUID].nextBusTime) : StopStatus[esimate_Arrival[stop.StopUID].stopStatus] }}
                               </span>
 
-                              <label class="ml-2">{{ stop.StopName.Zh_tw }}</label>
+                              <label class="ml-2">
+                                {{ stop.StopName.Zh_tw }}
+                                <span class="p-2 ml-2 rounded bg-indigo-300" 
+                                  v-if="current_StopUID_Arr.includes(stop.StopUID) && api_Response.current_BusInStop">
+                                  <!-- 目前公車位於哪個站點[index].PlateNumb -->
+                                  {{ api_Response.current_BusInStop[current_StopUID_Arr.indexOf(stop.StopUID)].PlateNumb }}
+                                </span>
+                              </label>
                           </h1>
                       </div>
                     </div>
@@ -135,7 +142,8 @@ export default {
       const map = store.state.module_Map.map;
       const bus_Route_Marker = store.state.module_Marker.bus_Route_Marker;
       let polyLine_Bus = store.state.module_Marker.polyLine_Bus;
-      const greenIcon = store.state.module_Marker.greenIcon;
+      const yellowIcon = store.state.module_Marker.yellowIcon;
+      const redIcon = store.state.module_Marker.redIcon;
 
       const citys = reactive([
         {name:'臺北市', en:'Taipei', isActive: false}, {name:'新北市', en:'NewTaipei', isActive: false}, {name:'桃園市', en:'Taoyuan', isActive: false},
@@ -238,6 +246,10 @@ export default {
 
       // 開啟 Accordion，匯入該路線API資訊
       const open_Route = async (event)=>{
+        bus_Route_Marker.clearLayers();
+        Current_Marker_Bus.clearLayers()
+        map.removeLayer(polyLine_Bus);
+
         // 抓取開啟的 Tab =>為陣列中[頁數 *10 + 該頁的第幾個]
         choose_Info.routeUID = filter_Route()[currentPage.value*10 + event.index].RouteUID
         // 不為 DisplayStopOfRoute所提供的縣市，選擇 get_Bus_StopOfRoute
@@ -255,22 +267,26 @@ export default {
 
       // 關閉 Accordion(中斷計時、清除地圖座標)
       const close_Route = () =>{
+        console.log('關掉');
         choose_Info.routeUID = "";
         clearInterval(updateInterval.value)
         clearInterval(updateInterval_Count.value)
         bus_Route_Marker.clearLayers();
+        Current_Marker_Bus.clearLayers()
         map.removeLayer(polyLine_Bus);
       }
 
       // 觸發條件(1:打開 Accordion、 2: 點擊改變順/逆行按鈕)
       const refresh_Route_Info = (direction)=>{
         choose_Info.direction = direction;  // 更新行駛方向
-        
+
         // 先刷新資料(重新計時、站點更新、座標清除)
         AllowDisplayStop.includes(choose_Info.city_en) ? get_DisplayStopOfRoute() :  get_StopOfRoute();
         clearInterval(updateInterval.value)
         clearInterval(updateInterval_Count.value)
         update_Count.value = 15
+        current_StopUID_Arr.value = [];
+        
 
         // Loading Animation .5s
         isLoading.value = true;
@@ -357,7 +373,7 @@ export default {
               onEachFeature: onEachFeature, // utilities/geoJSON.js
               pointToLayer: function (feature, latlng) {
                 return L.marker(latlng, {
-                  icon: greenIcon
+                  icon: yellowIcon
                 });
               },
             }).addTo(bus_Route_Marker);
@@ -391,7 +407,8 @@ export default {
                     }
                       esimate_Arrival[value.StopUID] = {
                         estimateTime: value.EstimateTime,  // 預估時間
-                        stopStatus: value.StopStatus   // 行駛情況
+                        stopStatus: value.StopStatus,   // 行駛情況
+                        nextBusTime: value.NextBusTime ? value.NextBusTime : ''
                       };
                   }
                 });
@@ -401,8 +418,13 @@ export default {
             });
       }
 
+      const current_StopUID_Arr = ref([])
+      let Current_Marker_Bus = L.layerGroup();
+
       // 抓到目前公車所在位置
       const get_Current_BusPosition = ()=>{
+        // 記得要初始化
+        Current_Marker_Bus.clearLayers()
         Promise.all([
           get_Bus_RealTimeByFrequency({
               city : choose_Info.city_en, 
@@ -416,8 +438,20 @@ export default {
         .then( (response) => {
             api_Response.current_BusInPos = response[0].data
             api_Response.current_BusInStop = response[1].data
-            console.log(api_Response.current_BusInPos);
-            console.log(api_Response.current_BusInStop);
+
+            api_Response.current_BusInStop.forEach((data)=>{
+              if(data.Direction === choose_Info.direction){
+                  current_StopUID_Arr.value.push(data.StopUID);
+              }
+            })
+            api_Response.current_BusInPos.forEach((data)=>{
+              if(data.Direction === choose_Info.direction){
+                  L.marker( [data.BusPosition.PositionLat, data.BusPosition.PositionLon], {icon:  redIcon})
+                  .addTo(Current_Marker_Bus)
+                  .bindPopup(`<h1 class='text-xl font-bold text-red-500'>目前公車位置 - ${data.PlateNumb}</h1>`).openPopup();
+                  Current_Marker_Bus.addTo(map);
+              }
+            })
         })
       }
 
@@ -439,6 +473,7 @@ export default {
         const onPage = (event)=>{
             currentPage.value = event.page;
             currentPageRow.value = event.rows;
+            close_Route(); // 換頁時也初始化
         }
         
         // PageRow設定: 到最後一頁則顯示 總路線數量 - ( 第幾頁n * 單頁數量m )，其他都以單頁數量顯示
@@ -449,19 +484,20 @@ export default {
         // filter Search (只要搜尋文字有包含在路線名稱、起站、迄站則都會顯示)
         const filter_Route = ()=>  api_Response.total_Routes.filter((route)=> route.RouteName.Zh_tw.includes(filter_Search.value) || route.DepartureStopNameZh.includes(filter_Search.value) || route.DestinationStopNameZh.includes(filter_Search.value) ) 
        
+        const nextBusTimeConfig = (date) => `${new Date(date).getHours()} : ${ new Date(date).getMinutes() > 10 ? new Date(date).getMinutes() : '0' + new Date(date).getMinutes()}`
 
-    return {citys, isLoading, goToSingleCity, choose_Info, api_Response, currentPage, currentPageRow, StopStatus, esimate_Arrival, filter_Search,  update_Count, 
-             Search_Bus_Route, goBackTotalCity, open_Route, close_Route, get_StopOfRoute, onPage, object_isEmpty, refresh_Route_Info, direct, filter_Route, pageRow_Route}
+    return {citys, isLoading, goToSingleCity, choose_Info, api_Response, currentPage, currentPageRow, StopStatus, esimate_Arrival, filter_Search,  update_Count, current_StopUID_Arr,
+             Search_Bus_Route, goBackTotalCity, open_Route, close_Route, get_StopOfRoute, onPage, object_isEmpty, refresh_Route_Info, direct, filter_Route, pageRow_Route, nextBusTimeConfig}
   }
 
 }
 </script>
 
 <style>
-
 .bus_polyline { 
 	stroke: red;
 }
+
 
 
 </style>
