@@ -267,7 +267,6 @@ export default {
 
       // 關閉 Accordion(中斷計時、清除地圖座標)
       const close_Route = () =>{
-        console.log('關掉');
         choose_Info.routeUID = "";
         clearInterval(updateInterval.value)
         clearInterval(updateInterval_Count.value)

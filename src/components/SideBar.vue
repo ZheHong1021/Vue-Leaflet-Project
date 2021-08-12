@@ -48,6 +48,7 @@ export default {
             {href:'#tra', id:'tra', title: '台鐵資訊', to: '/tra', icon: '<i class="fa text-black fa-subway"/>'},
             {href:'#thsr', id:'thsr', title: '高鐵資訊', to: '/thsr', icon: '<img class ="m-auto w-1/2 h-1/2" src="https://image.flaticon.com/icons/png/512/1278/1278687.png"></img>'},
             {href:'#bus', id:'bus', title: '公車資訊', to: '/bus', icon: '<i class="fas fa-bus-alt"></i>'},
+            {href:'#bike', id:'bike', title: '自行車資訊', to: '/bike', icon: '<i class="fas fa-biking"></i>'},
         ])
 
         onMounted(()=>{

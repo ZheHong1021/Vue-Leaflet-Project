@@ -3,6 +3,7 @@ import Home from '../views/Home.vue'
 import TRA from '../views/TRA.vue'
 import THSR from '../views/THSR.vue'
 import Bus from '../views/Bus.vue'
+import Bike from '../views/Bike.vue'
 
 const routes = [
   {
@@ -33,6 +34,14 @@ const routes = [
     path: '/bus',
     name: 'Bus',
     component: Bus,
+    meta: {
+      title: '台灣安心旅遊通',
+    }
+  },
+  {
+    path: '/bike',
+    name: 'Bike',
+    component: Bike,
     meta: {
       title: '台灣安心旅遊通',
     }

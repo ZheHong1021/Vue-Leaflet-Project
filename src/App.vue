@@ -1,6 +1,5 @@
 <template>
 
-  <!-- <AppHeader /> -->
   <Map />
   <SideBar />
   <TrainStation />
@@ -13,7 +12,6 @@
 <script>
 
 import Map from '@/components/Map'
-// import AppHeader from '@/components/AppHeader'
 import TrainStation from '@/components/TrainStation'
 import ThsrStation from '@/components/ThsrStation'
 import LayerControl from '@/components/LayerControl'
@@ -21,7 +19,6 @@ import SideBar from '@/components/SideBar'
 export default {
   components: {
     Map: Map,
-    // AppHeader: AppHeader,
     TrainStation: TrainStation,
     ThsrStation: ThsrStation,
     LayerControl: LayerControl,
