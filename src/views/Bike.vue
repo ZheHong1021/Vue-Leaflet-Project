@@ -5,12 +5,14 @@
 
 <script>
 // import axios from 'axios'
-import myData from '@/assets/test.kml';
+// import myData from '@/assets/test.kml';
 import {useStore} from 'vuex'
 export default {
     setup(){
         const store = useStore();
-        console.log(store);
+        const test = ()=>{
+          console.log(store);
+        }
        
 
         return { test }

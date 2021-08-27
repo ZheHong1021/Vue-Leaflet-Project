@@ -6,8 +6,8 @@
 
   <section id="Total_City" class="w-full flex flex-wrap justify-evenly" v-show = "goToSingleCity === false">
         <div  class="my-3 flex justify-center text-lg font-bold" v-for="(city, index) in citys" :key="city">
-            <div class="w-40 h-40 p-3 rounded-lg flex flex-col items-center justify-center cursor-pointer"
-              @click="Search_Bus_Route(index)" :class="city.isActive === true ? 'bg-yellow-600' : 'bg-yellow-200'">
+            <div class="w-40 h-40 p-3 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-yellow-500 transition duration-400"
+              @click="Search_Bus_Route(index)" :class="city.isActive === true ? 'bg-yellow-500' : 'bg-yellow-200'">
                 <i class="fas fa-bus-alt text-5xl"></i>
                 <h1 class="mt-4 text-xl">{{city.name}}</h1>
             </div>

@@ -4,6 +4,8 @@ import TRA from '../views/TRA.vue'
 import THSR from '../views/THSR.vue'
 import Bus from '../views/Bus.vue'
 import Bike from '../views/Bike.vue'
+import Travel from '../views/Travel.vue'
+import Food from '../views/Food.vue'
 
 const routes = [
   {
@@ -42,6 +44,22 @@ const routes = [
     path: '/bike',
     name: 'Bike',
     component: Bike,
+    meta: {
+      title: '台灣安心旅遊通',
+    }
+  },
+  {
+    path: '/travel',
+    name: 'Travel',
+    component: Travel,
+    meta: {
+      title: '台灣安心旅遊通',
+    }
+  },
+  {
+    path: '/food',
+    name: 'Food',
+    component: Food,
     meta: {
       title: '台灣安心旅遊通',
     }
