@@ -1,68 +1,68 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home.vue'
-import TRA from '../views/TRA.vue'
-import THSR from '../views/THSR.vue'
-import Bus from '../views/Bus.vue'
-import Bike from '../views/Bike.vue'
-import Travel from '../views/Travel.vue'
-import Food from '../views/Food.vue'
+
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home,
-    meta: {
-      title: '台灣安心旅遊通',
-    }
+    component: () => import('../views/Home.vue'),
   },
   {
     path: '/tra',
     name: 'TRA',
-    component: TRA,
-    meta: {
-      title: '台灣安心旅遊通',
-    }
+    component: () => import('../views/TRA.vue'),
+   
   },
   {
     path: '/thsr',
     name: 'THSR',
-    component: THSR,
-    meta: {
-      title: '台灣安心旅遊通',
-    }
+    component: () => import('../views/THSR.vue'),
   },
   {
     path: '/bus',
     name: 'Bus',
-    component: Bus,
-    meta: {
-      title: '台灣安心旅遊通',
+    component: () => import('../views/Bus.vue'),
+    beforeEnter(to, from, next){
+      const city_Obj = JSON.parse(sessionStorage.getItem("bus_City"));
+      if(city_Obj){
+        next({name: 'bus_City', params: {
+            city_en: city_Obj.city_en, 
+            city: city_Obj.city
+          }
+        });
+      }else{
+        next();
+      }
     }
+  },
+  {
+    path: '/bus/city/:city_en',
+    name: 'bus_City',
+    component: () => import('../views/BusCity.vue'),
+    children: [
+      {
+        path: 'route',
+        name: 'bus_Route',
+        component: () => import('../views/BusRoute.vue'),
+      }
+    ]
   },
   {
     path: '/bike',
     name: 'Bike',
-    component: Bike,
-    meta: {
-      title: '台灣安心旅遊通',
-    }
+    component: () => import('../views/Bike.vue'),
   },
   {
     path: '/travel',
     name: 'Travel',
-    component: Travel,
-    meta: {
-      title: '台灣安心旅遊通',
-    }
+    component: () => import('../views/Travel.vue'),
+    
   },
   {
     path: '/food',
     name: 'Food',
-    component: Food,
-    meta: {
-      title: '台灣安心旅遊通',
-    }
+    component: () => import('../views/Food.vue'),
+  
   },
  
 ]
@@ -73,7 +73,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) =>{
-  document.title = `${to.meta.title}`
+  document.title = "台灣安心旅遊通"
   next()
 })
 

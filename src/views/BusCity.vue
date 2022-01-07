@@ -1,0 +1,155 @@
+<template>
+  <section class="w-full flex flex-col justify-center items-center">
+    <h1 class="text-xl font-bold my-2">{{ $route.params.city }}</h1>
+      <Button type="button" class="p-button-outlined p-button-success my-4" @click="goBackTotalCity">
+          <i class="fas fa-reply-all text-black mr-3"></i>
+          <span class="p-ml-2 p-text-bold font-bold">回上一頁</span>
+      </Button>
+    
+    <!-- 顯示路線條件： 路線API已經載入到 Vuex中 -->
+    <div class="my-3 w-full" v-if="$store.state.module_Bus.city_Route">
+        <div class="w-full my-4 p-1 rounded-full border-2 border-gray-700 flex items-center">
+          <label for="searchBar"><i class="fas fa-search p-1 text-lg cursor-pointer w-1/12 hover:text-blue-400"></i></label>
+          <input id="searchBar" v-model="search_Val" type="text" placeholder="查詢路線" class="w-10/12 mx-2 bg-transparent text-black outline-none h-full text-lg"/>
+          <i class="fas fa-times p-1 text-lg cursor-pointer w-1/12 hover:text-blue-400" v-if="search_Val !== ''" @click="search_Val = ''"></i>
+        </div>
+        <span v-if="filter_Result.length === 0" class="text-base font-bold mb-4">目前找不到您所搜尋的路線，請重新搜尋。</span>
+
+        <Accordion class="w-full" @tab-open="open_Route" @tab-close="close_Route"  v-model:activeIndex="activeIndex">
+            <!-- Page逐一顯示，透過總頁數 % 目前一次顯示的數量，=> 假設共138頁，最後一頁 index只會跑到 8 -->
+            <AccordionTab v-for="(_,index) in pageRow_Route" :key="index">
+              <!-- Header -->
+              <template #header>
+                <i class="fas fa-bus"></i>
+                <!-- 透共目前頁數去抓取json資料 -->
+                <label id="routeName" class="mx-2 mr-6"> {{ filter_Result[currentPage * 10 + index].RouteName.Zh_tw  }} </label>
+                <span>
+                  <label >{{ filter_Result[currentPage * 10 + index].DepartureStopNameZh }}</label>
+                  <i class="fas fa-arrow-circle-right text-lg"></i>
+                  <label >{{filter_Result[currentPage * 10 + index].DestinationStopNameZh }}</label>
+                </span>
+              </template>
+                        
+              <!-- Body -->
+                <router-view></router-view>
+              </AccordionTab>
+        </Accordion>
+
+      <Paginator :pageLinkSize="4" :rows="10" :totalRecords="filter_Result.length" :rowsPerPageOptions="[10,20,30]" @page="onPage($event)"
+          template="PrevPageLink PageLinks  NextPageLink RowsPerPageDropdown">
+           <template #right="slotProps">
+             <h1 class="mt-3">單頁顯示數量: {{slotProps.state.rows}}，總路線數量: {{ filter_Result.length }}</h1>
+          </template>
+      </Paginator>
+    </div>
+  </section>
+
+</template>
+
+<script>
+import Button from 'primevue/button';
+import {useRouter, useRoute} from 'vue-router';
+import {useStore} from 'vuex';
+import Accordion from 'primevue/accordion';
+import AccordionTab from 'primevue/accordiontab';
+import Paginator from 'primevue/paginator';
+import { reactive, ref } from '@vue/reactivity';
+
+// API
+import { API_Bus_Route } from '@/api/api'; 
+import {  computed, onMounted } from '@vue/runtime-core';
+
+export default {
+    components: {
+        Button: Button,
+        Accordion: Accordion,
+        AccordionTab: AccordionTab,
+        Paginator: Paginator,
+    },
+    name: 'BusCity',
+
+  setup(){
+      const router = useRouter();
+      const route = useRoute();
+      const store = useStore();
+    
+    // 搜尋 filter
+      const search_Val = ref('');
+
+      const currentPage = ref( 0 );
+      const currentPageRow = ref( 10 ); // 一次顯示幾筆(10/20/30)
+
+      const route_Info = reactive({
+          uid: '',
+          direct: 0,
+      });
+
+      const activeIndex = ref(-1); // 預設所有 Tab關掉
+
+
+      const goBackTotalCity = ()=>{
+          router.push({name: 'Bus'});
+          store.commit('module_Bus/clearApiRoute'); 
+      }
+
+      onMounted(async ()=>{
+        const city_Obj = {city: route.params.city, city_en: route.params.city_en}
+        store.commit('module_Bus/setCityName', city_Obj)
+
+        await API_Bus_Route(route.params.city_en)
+            .then( (res)=>{
+              store.commit('module_Bus/setApiRoute', res.data); // 將路線紀錄到 vuex中 (為關掉 sidebar做準備)
+          }).catch( (err)=>{
+              console.log('連線異常:' + err);
+          })        
+      })
+
+      // filter Search (只要搜尋文字有包含在路線名稱、起站、迄站則都會顯示)，特別注意：高雄、桃園有問題(少起站或者是迄站)
+      const filter_Result = computed(()=> {
+          return store.state.module_Bus.city_Route.filter(
+          (route)=> {
+            if('RouteName' in route && 'DepartureStopNameZh' in route && 'DestinationStopNameZh' in route){
+              return route.RouteName.Zh_tw.includes(search_Val.value) ||  route.DepartureStopNameZh.includes(search_Val.value)||  route.DestinationStopNameZh.includes(search_Val.value);
+            }else{
+              return route.RouteName.Zh_tw.includes(search_Val.value);
+            }
+        });
+      });
+      
+      // PageRow設定: 到最後一頁則顯示 總路線數量 - ( 第幾頁n * 單頁數量m )，其他都以單頁數量顯示
+      const pageRow_Route = computed(()=> {
+          if( filter_Result.value.length - (currentPage.value * currentPageRow.value) > currentPageRow.value){
+            return currentPageRow.value;
+          }else{
+            return filter_Result.value.length - (currentPage.value * currentPageRow.value)
+          }
+      })
+
+
+        // Page Event
+        const onPage = (event)=>{
+            currentPage.value = event.page;
+            currentPageRow.value = event.rows;
+            activeIndex.value = -1;  // 把所有 tab關掉
+        }
+        // 開啟 Accordion，匯入該路線API資訊
+        const open_Route = (event)=>{
+          route_Info.uid = filter_Result.value[currentPage.value * 10 + event.index]['RouteUID'];
+          router.replace({
+            name: 'bus_Route',
+            query: {
+              id: route_Info.uid,
+              direct: route_Info.direct,
+            }
+          });
+        }
+
+        const close_Route = (event)=>{
+          console.log(event);
+        }
+        
+      return {search_Val, currentPage, currentPageRow, route_Info, activeIndex,
+            filter_Result, pageRow_Route, goBackTotalCity, open_Route, close_Route, onPage}
+  }
+}
+</script>

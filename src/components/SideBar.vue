@@ -78,6 +78,21 @@ export default {
     align-items: center;
     justify-content: center;
 }
+/* 
+@media (min-width: 768px) and (max-width: 991px) {
+    .leaflet-sidebar {
+      width: 400px;
+      max-width: 400px; } }
+@media (min-width: 992px) and (max-width: 1199px) {
+    .leaflet-sidebar {
+      width: 480px;
+      max-width: 480px; } }
+@media (min-width: 1200px) {
+    .leaflet-sidebar {
+      width: 540px;
+      max-width: 540px; 
+    } 
+} */
 
 
 </style>

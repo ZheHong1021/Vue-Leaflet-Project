@@ -89,7 +89,7 @@
 
 <script>
 import { reactive, ref } from '@vue/reactivity'
-import { get_Travel_ScenicSpot } from "../api/api.js"; 
+import { API_Travel_ScenicSpot } from "../api/api.js"; 
 import {useStore} from 'vuex';
 import L from 'leaflet';
 import Paginator from 'primevue/paginator';
@@ -144,7 +144,7 @@ export default {
             is_Single_City.value = true;
             is_Master_City.value = true;
 			choose_City.value = master_citys[index].name;
-            get_Travel_ScenicSpot(master_citys[index].en)
+            API_Travel_ScenicSpot(master_citys[index].en)
               .then( 
                   (res)=>{
                     PTX_Travel_Arr.value = res.data ;
@@ -158,7 +158,7 @@ export default {
 
 			choose_City.value = choose_City.value === "" ? "基隆市" : other_citys[index].name;
 
-            get_Travel_ScenicSpot(other_citys[index].en)
+            API_Travel_ScenicSpot(other_citys[index].en)
               .then( 
                   (res)=>{
                     PTX_Travel_Arr.value = res.data ;

@@ -162,7 +162,7 @@
 <script>
 import {onMounted, reactive, ref} from '@vue/runtime-core'
 import { useStore } from 'vuex' // Composition API
-import { get_Train_Odfare, get_Train_TimeTable } from "../api/api.js"; 
+import { API_Train_Odfare, API_Train_TimeTable } from "../api/api.js"; 
 import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
 import Calendar from 'primevue/calendar';
@@ -223,11 +223,11 @@ export default {
       if(info.origin_Station_id !== '' && info.destinate_Station_id !== '' && info.choose_Date !== ''){
         //  傳送起站、迄站的ID給 API(透過 Promise.all將 多個API同時執行)
         Promise.all([
-          get_Train_Odfare({
+          API_Train_Odfare({
               OriginStationID : info.origin_Station_id, 
               DestinationStationID : info.destinate_Station_id,
           }),
-          get_Train_TimeTable({
+          API_Train_TimeTable({
               OriginStationID : info.origin_Station_id, 
               DestinationStationID : info.destinate_Station_id,
               choose_Date: info.choose_Date})

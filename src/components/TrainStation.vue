@@ -7,7 +7,7 @@ import { onBeforeMount, onMounted, reactive } from 'vue';
 import { useStore } from 'vuex' // Composition API
 import leaflet from 'leaflet'
 import '../../node_modules/leaflet.markercluster/dist/leaflet.markercluster';
-import { get_Train_Station } from "../api/api.js"; 
+import { API_Train_Station } from "../api/api.js"; 
 
 
 export default {
@@ -18,7 +18,7 @@ export default {
     })
 
     onBeforeMount(async () => {
-       await get_Train_Station().then((res)=>{
+       await API_Train_Station().then((res)=>{
         react.stations = res.data;
         react.stations.map(item => leaflet.marker(new leaflet.LatLng(item.StationPosition.PositionLat, item.StationPosition.PositionLon))  // 新增Marker
           .bindPopup(`<p>經度: ${item.StationPosition.PositionLat}</p><p>緯度: ${item.StationPosition.PositionLon}</p>`))  // 資訊視窗

@@ -82,7 +82,7 @@
 
 <script>
 import { reactive, ref } from '@vue/reactivity'
-import { get_Restaurant } from "../api/api.js"; 
+import { API_Restaurant } from "../api/api.js"; 
 import {useStore} from 'vuex';
 import L from 'leaflet';
 import Paginator from 'primevue/paginator';
@@ -137,7 +137,7 @@ export default {
             is_Single_City.value = true;
             is_Master_City.value = true;
 			choose_City.value = master_citys[index].name;
-            get_Restaurant(master_citys[index].en)
+            API_Restaurant(master_citys[index].en)
               .then( 
                   (res)=>{
                     PTX_Food_Arr.value = res.data ;
@@ -151,7 +151,7 @@ export default {
 
 			choose_City.value = choose_City.value === "" ? "基隆市" : other_citys[index].name;
 
-            get_Restaurant(other_citys[index].en)
+            API_Restaurant(other_citys[index].en)
               .then( 
                   (res)=>{
                     PTX_Food_Arr.value = res.data ;

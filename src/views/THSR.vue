@@ -147,7 +147,7 @@ import { useStore } from 'vuex' // Composition API
 import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
 import Calendar from 'primevue/calendar';
-import { get_Thsr_Odfare, get_Thsr_TimeTable } from "../api/api.js"; 
+import { API_THSR_Odfare, API_THSR_TimeTable } from "../api/api.js"; 
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Dialog from 'primevue/dialog';
@@ -205,11 +205,11 @@ export default {
           if(info.origin_Station_id !== '' && info.destinate_Station_id !== ''  && info.choose_Date !== ''){
             //  傳送起站、迄站的ID給 API(透過 Promise.all將 多個API同時執行)
             Promise.all([
-              get_Thsr_Odfare({
+              API_THSR_Odfare({
                   OriginStationID : info.origin_Station_id, 
                   DestinationStationID : info.destinate_Station_id,
               }),
-              get_Thsr_TimeTable({
+              API_THSR_TimeTable({
                   OriginStationID : info.origin_Station_id, 
                   DestinationStationID : info.destinate_Station_id,
                   choose_Date: info.choose_Date})

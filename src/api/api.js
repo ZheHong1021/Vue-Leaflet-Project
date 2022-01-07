@@ -1,133 +1,84 @@
-import axios from 'axios';
-import useAuthHeader from '@/utilities/useAuthHeader'   // AuthKey
+import {get_Travel_ScenicSpot} from './travel';
+import {get_Restaurant} from './restaurant';
+import {get_Train_Station, get_Train_Odfare, get_Train_TimeTable, get_NearByTrain_Station} from './train';
+import {get_THSR_Station, get_THSR_Odfare, get_THSR_TimeTable, get_NearByTHSR_Station} from './high_Speed_Rail';
+
+import {get_Bus_Route, 
+    get_Bus_StopOfRoute, 
+    get_Bus_DisplayStopOfRoute, 
+    get_Bus_EstimatedTimeOfArrival, 
+    get_Bus_RealTimeByFrequency, 
+    get_Bus_RealTimeNearStop, 
+    get_BusStop,
+    get_BusStation,
+    get_NearByBusStop} from './bus';
+
+/*====== 旅遊 ====== */
+export const API_Travel_ScenicSpot = get_Travel_ScenicSpot
+
+
+
+/*====== 餐廳 ====== */
+export const API_Restaurant = get_Restaurant
+
+
+
+/*====== 台鐵 ====== */
 
 // 得到台鐵的站點資訊(使用到的位置: /components/TrainStation)
-const PTX_Train_Station = axios.create({
-    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Rail/TRA/Station',
-    headers: useAuthHeader()
-});
-
-export const get_Train_Station = () => PTX_Train_Station.get(`/`);
-
-
-// 得到高鐵的站點資訊(使用到的位置: /components/ThsrStation)
-const PTX_Thsr_Station = axios.create({
-    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Rail/THSR/Station',
-    headers: useAuthHeader()
-});
-export const get_Thsr_Station = () => PTX_Thsr_Station.get(`/`);
-
-
+export const API_Train_Station = get_Train_Station
 
 // 得到台鐵的票價資訊(使用到的位置: /views/TRA)
-const PTX_Train_ODfare = axios.create({
-    baseURL: 'https://ptx.transportdata.tw/MOTC/v3/Rail/TRA/ODFare',
-    headers: useAuthHeader()
-})
-export const get_Train_Odfare = (data) => PTX_Train_ODfare.get(`/${data.OriginStationID}/to/${data.DestinationStationID }?$format=JSON`);
-
-
-// 得到高鐵的票價資訊(使用到的位置: /views/THSR)
-const PTX_Thsr_ODfare = axios.create({
-    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Rail/THSR/ODFare',
-    headers: useAuthHeader()
-})
-export const get_Thsr_Odfare = (data) => PTX_Thsr_ODfare.get(`/${data.OriginStationID}/to/${data.DestinationStationID }?$format=JSON`);
-
+export const API_Train_Odfare = get_Train_Odfare
 
 // 得到台鐵的時刻表(使用到的位置: /views/TRA)
-const PTX_Train_TimeTable = axios.create({
-    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Rail/TRA/DailyTimetable/OD',
-    headers: useAuthHeader()
-})
+export const API_Train_TimeTable = get_Train_TimeTable
 
-export const get_Train_TimeTable = (data) => PTX_Train_TimeTable.get(`/${data.OriginStationID}/to/${data.DestinationStationID}/${data.choose_Date}?$format=JSON`);
+// 得到附近的有火車站(使用到的位置: /views/TRA)
+export const API_Train_NearByStation = get_NearByTrain_Station;
 
 
+
+/*====== 高鐵 ====== */
+
+// 得到高鐵的站點資訊(使用到的位置: /components/ThsrStation)
+export const API_THSR_Station = get_THSR_Station
+
+// 得到高鐵的票價資訊(使用到的位置: /views/THSR)
+export const API_THSR_Odfare = get_THSR_Odfare
 
 // 得到高鐵的時刻表(使用到的位置: /views/THSR)
-const PTX_Thsr_TimeTable = axios.create({
-    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Rail/THSR/DailyTimetable/OD',
-    headers: useAuthHeader()
-})
-export const get_Thsr_TimeTable = (data) => PTX_Thsr_TimeTable.get(`/${data.OriginStationID}/to/${data.DestinationStationID}/${data.choose_Date}?$format=JSON`);
+export const API_THSR_TimeTable = get_THSR_TimeTable
+
+// 得到附近的有高鐵站(使用到的位置: /views/TRA)
+export const API_THSR_NearByStation = get_NearByTHSR_Station;
+
+
+
+/*====== 公車 ====== */
 
 // 得到公車路線資訊(使用到的位置: /views/Bus)
-const PTX_Bus_Route = axios.create({
-    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Bus/Route/City',
-    headers: useAuthHeader()
-})
-const select_Bus_Route = 'RouteUID, RouteName, SubRoutes, BusRouteType, DepartureStopNameZh, DestinationStopNameZh';
-export const get_Bus_Route = (data) => PTX_Bus_Route.get(`/${data}?$format=JSON&$select=${select_Bus_Route}`);
-
-
+export const API_Bus_Route = get_Bus_Route
 
 // 得到公車路線上的各個站點(使用到的位置: /views/Bus)
-const PTX_Bus_StopOfRoute = axios.create({
-    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Bus/StopOfRoute/City',
-    headers: useAuthHeader()
-})
-const select_Bus_StopOfRoute = 'Direction, Stops';
-export const get_Bus_StopOfRoute = (data) => PTX_Bus_StopOfRoute.get(`/${data.city}?$format=JSON&$select=${select_Bus_StopOfRoute}&$filter=RouteUID eq '${data.routeUID}'`);
+export const API_Bus_StopOfRoute = get_Bus_StopOfRoute
 
-
-// 這個可以以線性(Leanerly)方式來顯示該路線所有的站序(臺北市、 臺南市、 新北市、 桃園市、 臺中市)
 // 得到公車路線上的各個站點(使用到的位置: /views/Bus)
-const PTX_Bus_DisplayStopOfRoute = axios.create({
-    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Bus/DisplayStopOfRoute/City',
-    headers: useAuthHeader()
-})
-const select_Bus_DisplayStopOfRoute = 'Direction, Stops';
-export const get_Bus_DisplayStopOfRoute = (data) => PTX_Bus_DisplayStopOfRoute.get(`/${data.city}?$format=JSON&$select=${select_Bus_DisplayStopOfRoute}&$filter=RouteUID eq '${data.routeUID}'`);
-
+export const API_Bus_DisplayStopOfRoute = get_Bus_DisplayStopOfRoute
 
 // 得到公車路線上的到站估計時間(使用到的位置: /views/Bus)
-const PTX_Bus_EstimatedTimeOfArrival = axios.create({
-    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Bus/EstimatedTimeOfArrival/City',
-    headers: useAuthHeader()
-})
-const select_Bus_EstimatedTimeOfArrival = 'StopUID, Direction, PlateNumb, EstimateTime, NextBusTime, StopName';
-export const get_Bus_EstimatedTimeOfArrival = (data) => PTX_Bus_EstimatedTimeOfArrival.get(`/${data.city}?$format=JSON&$select=${select_Bus_EstimatedTimeOfArrival}&$filter=RouteUID eq '${data.routeUID}'`);
-
+export const API_Bus_EstimatedTimeOfArrival = get_Bus_EstimatedTimeOfArrival
 
 // 得到目前公車在地圖上哪個位置(使用到的位置: /views/Bus)
-const PTX_Bus_RealTimeByFrequency = axios.create({
-    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Bus/RealTimeByFrequency/City/',
-    headers: useAuthHeader()
-})
-const select_Bus_RealTimeByFrequency = 'PlateNumb, Direction, BusPosition, DutyStatus';
-export const get_Bus_RealTimeByFrequency = (data) => PTX_Bus_RealTimeByFrequency.get(`/${data.city}?$format=JSON&$select=${select_Bus_RealTimeByFrequency}&$filter=RouteUID eq '${data.routeUID}' AND DutyStatus eq 1`);
-
+export const API_Bus_RealTimeByFrequency = get_Bus_RealTimeByFrequency
 
 // 得到目前公車在哪個站點(使用到的位置: /views/Bus)
-const PTX_Bus_RealTimeNearStop = axios.create({
-    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Bus/RealTimeNearStop/City/',
-    headers: useAuthHeader()
-})
-const select_Bus_RealTimeNearStop = 'Direction, StopName, PlateNumb, DutyStatus, StopUID';
-export const get_Bus_RealTimeNearStop = (data) => PTX_Bus_RealTimeNearStop.get(`/${data.city}?$format=JSON&$select=${select_Bus_RealTimeNearStop}&$filter=RouteUID eq '${data.routeUID}' AND DutyStatus eq 1`);
+export const API_Bus_RealTimeNearStop = get_Bus_RealTimeNearStop
 
+// 得到公車的站點資訊(使用到的位置: /components/Map)
+export const API_BusStop = get_BusStop
 
+// 得到公車的站點資訊(使用到的位置: /components/Map)
+export const API_BusStation = get_BusStation
 
-// 得到旅遊景點資訊(使用到的位置: /views/Travel)
-const PTX_Travel_ScenicSpot = axios.create({
-    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Tourism/ScenicSpot',
-    headers: useAuthHeader()
-})
-const select_Travel_ScenicSpot = 'Name, DescriptionDetail, Phone, Address, OpenTime, Position, Class1, Class2, Class3, Remarks, TravelInfo';
-// export const get_Travel_ScenicSpot = (city) => PTX_Travel_ScenicSpot.get(`/${city}?$format=JSON`);
-export const get_Travel_ScenicSpot = (city) => PTX_Travel_ScenicSpot.get(`/${city}?$format=JSON&$select=${select_Travel_ScenicSpot}`);
-
-
-
-// 得到美食資訊(使用到的位置: /views/Food)
-const PTX_Restaurant = axios.create({
-    baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Tourism/Restaurant',
-    headers: useAuthHeader()
-})
-const select_Restaurant = 'Name, Description, Phone, Address, OpenTime, Position, Class';
-// export const get_Travel_ScenicSpot = (city) => PTX_Travel_ScenicSpot.get(`/${city}?$format=JSON`);
-export const get_Restaurant = (city) => PTX_Restaurant.get(`/${city}?$format=JSON&$select=${select_Restaurant}`);
-
-
-
+export const API_NearByBusStop = get_NearByBusStop

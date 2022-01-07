@@ -7,7 +7,7 @@ import { onBeforeMount, onMounted, reactive } from 'vue';
 import { useStore } from 'vuex' // Composition API
 import leaflet from 'leaflet'
 import '../../node_modules/leaflet.markercluster/dist/leaflet.markercluster';
-import { get_Thsr_Station } from "../api/api.js"; 
+import { API_THSR_Station } from "../api/api.js"; 
 
 
 export default {
@@ -18,7 +18,7 @@ export default {
     })
 
     onBeforeMount(async () => {
-          await get_Thsr_Station().then((res)=>{
+          await API_THSR_Station().then((res)=>{
             react.stations = res.data;
             
             react.stations.map(item => leaflet.marker(
