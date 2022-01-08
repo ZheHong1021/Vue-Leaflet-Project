@@ -31,20 +31,20 @@ export default {
             const map = {}
             const status = {0:'正常', 1:'尚未發車', 2:'交管不停靠', 3:'末班已過', 4:'今日停駛'};
             for (const item of payload) {
-                // 情況1: 沒有在Object中，直接紀錄
-                // 情況2: 有在 Object中，判斷有預估時間或到站時間最短者優先紀錄
-                // 情況3: 有在 Object中，但記錄的時間較短 ->剔除
-                // 情況3: 有在 Object中，無預估時間 ->剔除
+                // 情況1: 沒有在Object中，直接紀錄(跳離條件式)
+                // 情況2: 有在 Object中，判斷有預估時間或到站時間最短者優先紀錄 (跳離條件式)
+                // 情況3: 有在 Object中，但記錄的時間較短 ->剔除 (return)
+                // 情況3: 有在 Object中，無預估時間 ->剔除 (return)
                 if(Object.prototype.hasOwnProperty.call(map, item.StopUID)){
                     if(map[item.StopUID] == 'underfined' || map[item.StopUID].estimateTime < item.EstimateTime){
                         return;
                     }
                 }
-                const nextBusTime = item.NextBusTime ? new Date(item.NextBusTime) : '';
+                const nextBusTime = item.NextBusTime ? new Date(item.NextBusTime).getHours() + " : " + (new Date(item.NextBusTime).getMinutes() > 10 ? "" : "0") + new Date(item.NextBusTime).getMinutes() : "";
                 map[item.StopUID] = {
                     estimateTime: Math.ceil(item.EstimateTime / 60 ),  // 預估時間(秒數 ÷ 60)
                     stopStatus: status[item.StopStatus],   // 行駛情況
-                    nextBusTime: nextBusTime.getHours() + " : " + (nextBusTime.getMinutes() > 10 ? "" : "0") + nextBusTime.getMinutes(),
+                    nextBusTime: nextBusTime,
                 };
             }
             commit('setApiEstimateTime', map);

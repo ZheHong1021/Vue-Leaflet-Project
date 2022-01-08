@@ -111,13 +111,11 @@ export default {
 
       // 改變行駛方向 或是 更新時間到刷新時執行
       const refresh_Route_Info = async (direct)=>{
-        timer.value = 30; // 更新時，重新倒數
+        if (direct != route.query.direct) set_StopOfRoute();
         await router.push({ name: 'bus_City', query: { id: route.query.id, direct: direct}});
-        await set_StopOfRoute();
         await set_EstimatedTime();
+        timer.value = 30; // 更新時，重新倒數
       }
-      
-      // const TimeConfig = (date) => `${new Date(date).getHours()} : ${ new Date(date).getMinutes() >= 10 ? new Date(date).getMinutes() : '0' + new Date(date).getMinutes()}`
       
       const go_Position = ()=>{
         console.log(123);
