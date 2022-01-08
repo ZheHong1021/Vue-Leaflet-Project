@@ -36,16 +36,9 @@ const routes = [
     }
   },
   {
-    path: '/bus/city/:city_en',
+    path: '/bus/city/:city_en/route',
     name: 'bus_City',
     component: () => import('../views/BusCity.vue'),
-    children: [
-      {
-        path: 'route',
-        name: 'bus_Route',
-        component: () => import('../views/BusRoute.vue'),
-      }
-    ]
   },
   {
     path: '/bike',
