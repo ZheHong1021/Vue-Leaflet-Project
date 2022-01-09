@@ -24,8 +24,6 @@ export default {
     LayerControl: LayerControl,
     SideBar: SideBar
   },
-  
- 
 }
 </script>
 
@@ -36,5 +34,6 @@ export default {
   padding: 0;
   box-sizing: border-box;
   font-family: 'Noto Sans TC', sans-serif;
+  transition: .2s linear;
 }
 </style>

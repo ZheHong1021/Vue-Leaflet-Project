@@ -17,8 +17,6 @@
 
   <!-- 顯示情況： 一、已經切換路由前 且 Loading動畫結束 -->
   <router-view v-show="$route.path !== '/bus'"></router-view>
-
-
 </template>
 
 <script>

@@ -30,10 +30,9 @@ const routes = [
             city: city_Obj.city
           }
         });
-      }else{
-        next();
       }
-    }
+        next();
+    },
   },
   {
     path: '/bus/city/:city_en/route',

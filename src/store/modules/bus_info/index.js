@@ -5,6 +5,10 @@ export default {
             tw: '',
             en: '',
         },
+        bus_Route:{
+            uid: '',
+            direct: '',
+        },
         map_Route: {},
         map_Stop: {},
         map_EstimateTime: {},
@@ -40,7 +44,7 @@ export default {
                         return;
                     }
                 }
-                const nextBusTime = item.NextBusTime ? new Date(item.NextBusTime).getHours() + " : " + (new Date(item.NextBusTime).getMinutes() > 10 ? "" : "0") + new Date(item.NextBusTime).getMinutes() : "";
+                const nextBusTime = item.NextBusTime ? new Date(item.NextBusTime).getHours() + " : " + (new Date(item.NextBusTime).getMinutes() >= 10 ? "" : "0") + new Date(item.NextBusTime).getMinutes() : "";
                 map[item.StopUID] = {
                     estimateTime: Math.ceil(item.EstimateTime / 60 ),  // 預估時間(秒數 ÷ 60)
                     stopStatus: status[item.StopStatus],   // 行駛情況
@@ -54,6 +58,10 @@ export default {
         setCityName(state, payload){
             sessionStorage.setItem("bus_City", JSON.stringify(payload)); //新增到sessionStorage 
             state.city_name = payload
+        },
+        setBusRoute(state, payload){
+            sessionStorage.setItem("bus_Route", JSON.stringify(payload)); //新增到sessionStorage 
+            state.bus_Route = payload
         },
         setApiRoute(state, payload){
             state.map_Route = payload;

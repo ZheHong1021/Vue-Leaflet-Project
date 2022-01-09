@@ -78,6 +78,28 @@ export default {
     align-items: center;
     justify-content: center;
 }
+
+.leaflet-sidebar-content{
+    /* 滾動效果 */
+    scroll-behavior: smooth;  
+
+}
+
+.leaflet-sidebar-content::-webkit-scrollbar{
+    width: .5rem;
+}
+.leaflet-sidebar-content::-webkit-scrollbar-track{
+    box-shadow: inset 0 0 1px grey; 
+    background: #f7f1e3;
+}
+.leaflet-sidebar-content::-webkit-scrollbar-thumb{
+    background: #aaa69d;
+    border-radius: 3px;
+}
+.leaflet-sidebar-content::-webkit-scrollbar-thumb:hover{
+    background: #84817a;
+}
+
 /* 
 @media (min-width: 768px) and (max-width: 991px) {
     .leaflet-sidebar {

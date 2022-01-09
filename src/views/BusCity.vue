@@ -1,6 +1,6 @@
 <template>
   <section class="w-full flex flex-col justify-center items-center">
-    <h1 class="text-xl font-bold my-2">{{ $route.params.city }}</h1>
+    <h1 class="text-xl font-bold my-2">{{ city_name.city }}</h1>
       <Button type="button" class="p-button-outlined p-button-success my-4" @click="goBackTotalCity">
           <i class="fas fa-reply-all text-black mr-3"></i>
           <span class="p-ml-2 p-text-bold font-bold">回上一頁</span>
@@ -69,11 +69,17 @@ export default {
         BusRoute: BusRoute,
     },
     name: 'BusCity',
+    //离开守卫：通过路由规则，离开该组件时被调用
+    beforeRouteLeave (to, from, next) {
+      if(to.path === '/bus') sessionStorage.removeItem("bus_City");
+      next();   
+    },
     setup(){
         const router = useRouter();
         const route = useRoute();
         const store = useStore();
-      
+        const city_name = computed(()=> store.state.module_Bus.city_name);
+
       // 搜尋 filter
         const search_Val = ref('');
       
@@ -88,25 +94,28 @@ export default {
         // Accordion設定 預設所有 Tab關掉
         const activeIndex = ref(-1); 
 
-        const route_Info = reactive({
-            uid: '',
-            direct: 0,
-        });
+        const route_Uid = ref('');
 
         const routes = ref();
 
         onMounted(async ()=>{
-          const city_Obj = {city: route.params.city, city_en: route.params.city_en}
+          const city_Obj = {};
+          // 如果 Session有儲存 city資料，則直接讀取Session資料；反之，如果沒有則讀取 params就好
+          const sessionCity = JSON.parse(sessionStorage.getItem("bus_City"));
+          city_Obj.city =  sessionCity ? sessionCity.city : route.params.city;
+          city_Obj.city_en = sessionCity ? sessionCity.city_en : route.params.city_en;
+
+          // 將當前市區公車的縣市記錄到 vuex中
           store.commit('module_Bus/setCityName', city_Obj);
 
-          await API_Bus_Route(route.params.city_en)
+          await API_Bus_Route(city_name.value.city_en)
               .then( (res)=>{
                 routes.value = res.data;
                 store.dispatch('module_Bus/setApiRoute', res.data); // 將路線紀錄到 vuex中並轉換成 map型態
             }).catch( (err)=>{
                 console.log('連線異常:' + err);
             })        
-        })
+        });
 
         const goBackTotalCity = ()=>{
           router.push({name: 'Bus'});
@@ -127,11 +136,9 @@ export default {
         
         // PageRow設定: 到最後一頁則顯示 總路線數量 - ( 第幾頁n * 單頁數量m )，其他都以單頁數量顯示
         const currentPageRoute = computed(()=> {
-            if( filter_Result.value.length - PageNumRow.value > page.row){
-              return page.row;
-            }else{
-              return filter_Result.value.length - PageNumRow.value
-            }
+            if( filter_Result.value.length - PageNumRow.value > page.row) return page.row;
+            else return filter_Result.value.length - PageNumRow.value
+            
         })
 
           // Page Event
@@ -146,24 +153,21 @@ export default {
                 }
               });
           }
-
-          // 開啟 Accordion，匯入該路線API資訊
+          // 開啟 Accordion，匯入該路線API資訊(預設開啟 Direction為 0)
           const open_Route = (event)=>{
-            route_Info.uid = filter_Result.value[PageNumRow.value + event.index]['RouteUID'];
+            route_Uid.value = filter_Result.value[PageNumRow.value + event.index]['RouteUID'];
             router.replace({
               name: 'bus_City',
               query: {
-                id: route_Info.uid,
-                direct: route_Info.direct,
+                id: route_Uid.value,
+                direct: 0,
               }
             });
           }
-
           const close_Route = (event)=>{
             console.log(event);
           }
-          
-        return {routes, search_Val, page, route_Info, activeIndex, filter_Result, currentPageRoute, PageNumRow, goBackTotalCity, open_Route, close_Route, onPage}
+        return {city_name, routes, search_Val, page, route_Uid, activeIndex, filter_Result, currentPageRoute, PageNumRow, goBackTotalCity, open_Route, close_Route, onPage}
     }
   }
 </script>

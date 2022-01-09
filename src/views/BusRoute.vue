@@ -1,29 +1,36 @@
 <template>
   <div>
-    <!-- 用 sticky滾動時會一直存在 -->
-    <div id="route_Header" class="sticky" style="top: 20px">
+<!-- 用 sticky滾動時會一直存在 -->
+    <div id="route_Header" class="sticky" style="top: 20px; z-index: 1000;">
         <span class="rounded p-2 bg-purple-700 text-white font-bold text-lg " >下次更新時間: {{timer}}</span>
         <span class="rounded p-2 bg-red-500 text-white font-bold text-lg ml-3 cursor-pointer" @click="refresh_Route_Info($route.query.direct)">刷新</span>
         <span class="rounded p-2 bg-green-400 text-white font-bold text-lg ml-3 cursor-pointer" @click="go_Position()">導引</span>
         <div class="w-full flex justify-center mb-6 mt-4">
-            <Button @click="refresh_Route_Info(0)" :label="`往${route_info['DepartureStopNameZh']}`" class="font-bold p-button-raised"
+            <Button @click="refresh_Route_Info(0)" :label="`往${route_info['DestinationStopNameZh']}`" class="font-bold p-button-raised"
                 :class="$route.query.direct != 0 ? 'p-button-text' : ''" />
-            <Button @click="refresh_Route_Info(1)" :label="`往${route_info['DestinationStopNameZh']}`" class="font-bold p-button-raised"
+            <Button @click="refresh_Route_Info(1)" :label="`往${route_info['DepartureStopNameZh']}`" class="font-bold p-button-raised"
                 :class="$route.query.direct != 1 ? 'p-button-text' : ''" />
         </div>
     </div>
+    <div v-if="stopsOfRoute" class="relative top-4" style="min-height: 10rem;">
+      <loading 
+          v-model:active="isLoading"
+          :is-full-page="false"
+          loader="bars"
+        />
+      <template v-if="!isLoading">
+        <div v-for="stop in stopsOfRoute" :key="stop.StopUID">
+          <h1 class="my-4" v-if="map_Time_Obj[stop.StopUID]">
+              <span class="px-4 py-1 rounded text-white mr-2 bg-gray-500" v-if="!map_Time_Obj[stop.StopUID].estimateTime && !map_Time_Obj[stop.StopUID].nextBusTime">{{map_Time_Obj[stop.StopUID].stopStatus }}</span>
+              <span class="px-4 py-1 rounded text-white mr-2 bg-gray-500" v-else-if="!map_Time_Obj[stop.StopUID].estimateTime">{{map_Time_Obj[stop.StopUID].nextBusTime}}</span>
+              <span class="px-4 py-1 rounded text-white mr-2 bg-red-500" v-else-if="map_Time_Obj[stop.StopUID].estimateTime <= 1">進站中</span>
+              <span class="px-4 py-1 rounded text-white mr-2 bg-yellow-500" v-else-if="map_Time_Obj[stop.StopUID].estimateTime <= 3">即將進站</span>
+              <span class="px-4 py-1 rounded text-white mr-2 bg-green-500" v-else>{{map_Time_Obj[stop.StopUID].estimateTime}} 分</span>
+              <label>{{ stop.StopName.Zh_tw }}</label>
+          </h1>
+        </div>
+      </template>
 
-    <div v-if="stopsOfRoute">
-      <div v-for="stop in stopsOfRoute" :key="stop.StopUID">
-        <h1 class="my-4" v-if="map_Time_Obj[stop.StopUID]">
-            <span class="px-4 py-1 rounded text-white mr-2 bg-gray-500" v-if="!map_Time_Obj[stop.StopUID].estimateTime && !map_Time_Obj[stop.StopUID].nextBusTime">{{map_Time_Obj[stop.StopUID].stopStatus }}</span>
-            <span class="px-4 py-1 rounded text-white mr-2 bg-gray-500" v-else-if="!map_Time_Obj[stop.StopUID].estimateTime">{{map_Time_Obj[stop.StopUID].nextBusTime}}</span>
-            <span class="px-4 py-1 rounded text-white mr-2 bg-red-500" v-else-if="map_Time_Obj[stop.StopUID].estimateTime <= 1">進站中</span>
-            <span class="px-4 py-1 rounded text-white mr-2 bg-yellow-500" v-else-if="map_Time_Obj[stop.StopUID].estimateTime <= 3">即將進站</span>
-            <span class="px-4 py-1 rounded text-white mr-2 bg-green-500" v-else>{{map_Time_Obj[stop.StopUID].estimateTime}} 分</span>
-            <label>{{ stop.StopName.Zh_tw }}</label>
-        </h1>
-      </div>
     </div>
 
   </div>
@@ -35,10 +42,13 @@ import { computed, onMounted, onUnmounted, ref } from '@vue/runtime-core'
 import {API_Bus_DisplayStopOfRoute, API_Bus_StopOfRoute, API_Bus_EstimatedTimeOfArrival} from "@/api/api.js";
 import {useRouter, useRoute } from 'vue-router';
 import { useStore } from 'vuex';
+import 'vue-loading-overlay/dist/vue-loading.css';
+import Loading from 'vue-loading-overlay';
 
 export default {
   components: {
     Button: Button,
+    Loading: Loading,
   },
   name: "BusRoute",
     setup(){
@@ -51,8 +61,10 @@ export default {
       const route_info = ref(map_Route_Obj.value[route.query.id]);
       const stopsOfRoute = ref();
       const timer = ref(30); // 預設 30s
+      const isLoading = ref(false);
 
       onMounted(async()=>{
+        console.log(`onMounted: ${route.query.direct}`);
         await set_StopOfRoute();
         await set_EstimatedTime();
       })
@@ -70,7 +82,6 @@ export default {
           API_Bus_DisplayStopOfRoute(obj)
             .then( (res)=>{
               stopsOfRoute.value = res.data[0].Stops; // 抓陣列的第一個
-              // store.dispatch('module_Bus/setApiStop', res.data[0].Stops); // 將路線紀錄到 vuex中並轉換成 map型態
             }).catch( (err)=>{
               console.log('連線異常:' + err);
           })
@@ -78,7 +89,6 @@ export default {
           API_Bus_StopOfRoute(obj)
             .then( (res)=>{
               stopsOfRoute.value = res.data[0].Stops; // 抓陣列的第一個
-              // store.dispatch('module_Bus/setApiStop', res.data[0].Stops); // 將路線紀錄到 vuex中並轉換成 map型態
             }).catch( (err)=>{
               console.log('連線異常:' + err);
           })
@@ -99,7 +109,7 @@ export default {
           })
       }
 
-      // 30秒倒數
+      // 30秒倒數計時器
       const update_Timer = setInterval(()=> {
         timer.value = timer.value -= 1; // 計時器倒數
         if(timer.value === 0 ) refresh_Route_Info(route.query.direct); // 倒數到 0則刷新
@@ -108,19 +118,31 @@ export default {
       onUnmounted(()=>{
         clearInterval(update_Timer);
       })
+          
+      const showLoading =()=>{
+          isLoading.value = true;
+          setTimeout(() => {
+              isLoading.value = false
+          },1500)
+      }
 
       // 改變行駛方向 或是 更新時間到刷新時執行
-      const refresh_Route_Info = async (direct)=>{
-        if (direct != route.query.direct) set_StopOfRoute();
-        await router.push({ name: 'bus_City', query: { id: route.query.id, direct: direct}});
-        await set_EstimatedTime();
-        timer.value = 30; // 更新時，重新倒數
+      const refresh_Route_Info =  async(direct)=>{
+          showLoading();
+          if (direct != route.query.direct){ // 只有改變 Direction才執行(避免效能花費)
+            await router.push({ name: 'bus_City', query: { id: route.query.id, direct: direct}});
+            await set_StopOfRoute(); 
+          }
+          await set_EstimatedTime();
+          timer.value = 30; // 更新時，重新倒數
       }
-      
+  
+
       const go_Position = ()=>{
         console.log(123);
       }
-      return {stopsOfRoute, route_info, timer, map_Time_Obj, refresh_Route_Info, go_Position}
+      return {stopsOfRoute, route_info, timer, map_Time_Obj, isLoading,
+            refresh_Route_Info, go_Position}
     },
 }
 </script>
