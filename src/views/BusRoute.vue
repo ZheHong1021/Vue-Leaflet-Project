@@ -82,6 +82,7 @@ export default {
           API_Bus_DisplayStopOfRoute(obj)
             .then( (res)=>{
               stopsOfRoute.value = res.data[0].Stops; // 抓陣列的第一個
+              store.dispatch('module_Bus/setApiStop', res.data[0].Stops); // 將路線紀錄到 vuex中並轉換成 map型態
             }).catch( (err)=>{
               console.log('連線異常:' + err);
           })
@@ -89,6 +90,7 @@ export default {
           API_Bus_StopOfRoute(obj)
             .then( (res)=>{
               stopsOfRoute.value = res.data[0].Stops; // 抓陣列的第一個
+              store.dispatch('module_Bus/setApiStop', res.data[0].Stops); // 將路線紀錄到 vuex中並轉換成 map型態
             }).catch( (err)=>{
               console.log('連線異常:' + err);
           })
@@ -112,6 +114,7 @@ export default {
       // 30秒倒數計時器
       const update_Timer = setInterval(()=> {
         timer.value = timer.value -= 1; // 計時器倒數
+        console.log(timer.value);
         if(timer.value === 0 ) refresh_Route_Info(route.query.direct); // 倒數到 0則刷新
       }, 1000);
 
@@ -136,7 +139,6 @@ export default {
           await set_EstimatedTime();
           timer.value = 30; // 更新時，重新倒數
       }
-  
 
       const go_Position = ()=>{
         console.log(123);

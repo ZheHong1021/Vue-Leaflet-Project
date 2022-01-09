@@ -1,6 +1,6 @@
 <template>
   <section class="w-full flex flex-col justify-center items-center">
-    <h1 class="text-xl font-bold my-2">{{ city_name.city }}</h1>
+    <h1 class="text-2xl font-bold my-4">{{ city_name.city }}</h1>
       <Button type="button" class="p-button-outlined p-button-success my-4" @click="goBackTotalCity">
           <i class="fas fa-reply-all text-black mr-3"></i>
           <span class="p-ml-2 p-text-bold font-bold">回上一頁</span>
@@ -35,10 +35,10 @@
               </AccordionTab>
         </Accordion>
 
-      <Paginator :pageLinkSize="4" :rows="10" :totalRecords="filter_Result.length" :rowsPerPageOptions="[10,20,30]" @page="onPage($event)"
+      <Paginator :pageLinkSize="4" :rows="10" :totalRecords="filter_Result_Length" :rowsPerPageOptions="[10,20,30]" @page="onPage($event)"
           template="PrevPageLink PageLinks  NextPageLink RowsPerPageDropdown">
            <template #right="slotProps">
-             <h1 class="mt-3">單頁顯示數量: {{slotProps.state.rows}}，總路線數量: {{ filter_Result.length }}</h1>
+             <h1 class="mt-3">單頁顯示數量: {{slotProps.state.rows}}，總路線數量: {{ filter_Result_Length }}</h1>
           </template>
       </Paginator>
     </div>
@@ -134,11 +134,12 @@ export default {
           });
         });
         
+        const filter_Result_Length = computed(()=> filter_Result.value.length);
+        
         // PageRow設定: 到最後一頁則顯示 總路線數量 - ( 第幾頁n * 單頁數量m )，其他都以單頁數量顯示
         const currentPageRoute = computed(()=> {
-            if( filter_Result.value.length - PageNumRow.value > page.row) return page.row;
-            else return filter_Result.value.length - PageNumRow.value
-            
+            if( filter_Result_Length.value - PageNumRow.value > page.row) return page.row;
+            else return filter_Result_Length.value - PageNumRow.value
         })
 
           // Page Event
@@ -164,10 +165,11 @@ export default {
               }
             });
           }
-          const close_Route = (event)=>{
-            console.log(event);
+          // 關閉->跳回 bus_City並不用給予 query
+          const close_Route = ()=>{
+            router.replace({ name: 'bus_City'});
           }
-        return {city_name, routes, search_Val, page, route_Uid, activeIndex, filter_Result, currentPageRoute, PageNumRow, goBackTotalCity, open_Route, close_Route, onPage}
+        return {city_name, routes, search_Val, page, route_Uid, activeIndex, filter_Result, filter_Result_Length, currentPageRoute, PageNumRow, goBackTotalCity, open_Route, close_Route, onPage}
     }
   }
 </script>
