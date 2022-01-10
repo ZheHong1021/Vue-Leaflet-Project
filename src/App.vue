@@ -2,8 +2,8 @@
 
   <Map />
   <SideBar />
-  <TrainStation />
-  <ThsrStation />
+  <!-- <TrainStation /> -->
+  <!-- <ThsrStation /> -->
   <LayerControl />
   
 </template>
@@ -12,15 +12,15 @@
 <script>
 
 import Map from '@/components/Map'
-import TrainStation from '@/components/TrainStation'
-import ThsrStation from '@/components/ThsrStation'
+// import TrainStation from '@/components/TrainStation'
+// import ThsrStation from '@/components/ThsrStation'
 import LayerControl from '@/components/LayerControl'
 import SideBar from '@/components/SideBar'
 export default {
   components: {
     Map: Map,
-    TrainStation: TrainStation,
-    ThsrStation: ThsrStation,
+    // TrainStation: TrainStation,
+    // ThsrStation: ThsrStation,
     LayerControl: LayerControl,
     SideBar: SideBar
   },

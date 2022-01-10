@@ -1,3 +1,4 @@
+import L from 'leaflet'
 export default {
     namespaced: true,
     state:{
@@ -9,9 +10,11 @@ export default {
             uid: '',
             direct: '',
         },
+        stop_Markers: L.layerGroup(),
         map_Route: {},
         map_Stop: {},
         map_EstimateTime: {},
+        map_RealTimeNearStop: {},
     },
     actions:{
         // 將陣列轉成 map型態，找尋資料較有效率
@@ -22,15 +25,20 @@ export default {
             }
             commit('setApiRoute', map);
         },
-        // 將陣列轉成 map型態，找尋資料較有效率
-        setApiStop({commit}, payload){
+        setApiStop({commit, state}, payload){
             const map = {}
+            state.stop_Markers = L.layerGroup();
             for (const item of payload) {
                 map[item.StopUID] = item;
+                const marker = L.marker([item.StopPosition.PositionLat, item.StopPosition.PositionLon]); 
+                state.stop_Markers.addLayer(marker);
             }
             commit('setApiStop', map);
+            commit('module_Map/add_Marker_To_Map', state.stop_Markers, { root: true });
         },
-        // 將陣列轉成 map型態，找尋資料較有效率
+        removeStopMarker({commit, state}){
+            commit('module_Map/remove_Marker_To_Map', state.stop_Markers, { root: true });
+        },
         setApiEstimateTime({commit}, payload){
             const map = {}
             const status = {0:'正常', 1:'尚未發車', 2:'交管不停靠', 3:'末班已過', 4:'今日停駛'};
@@ -52,6 +60,17 @@ export default {
                 };
             }
             commit('setApiEstimateTime', map);
+        },        
+        setApiNearStop({commit}, payload){
+            const map = {}
+            const A2EventType = {0: "離站", 1: "進站"};
+            for (const item of payload) {
+                map[item.StopUID] = {
+                    PlateNumb: item.PlateNumb,
+                    A2EventType: A2EventType[item.A2EventType],
+                };
+            }
+            commit('setApiNearStop', map);
         },
     },
     mutations:{
@@ -72,11 +91,15 @@ export default {
         setApiEstimateTime(state, payload){
             state.map_EstimateTime = payload;
         },
+        setApiNearStop(state, payload){
+            state.map_RealTimeNearStop = payload;
+        },
         clearApiRoute(state){
             sessionStorage.removeItem("bus_City");
             state.city_name = {};
             state.city_Route = [];
-        }
+        },
+
     },
     getters:{
         

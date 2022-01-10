@@ -27,19 +27,25 @@
               <span class="px-4 py-1 rounded text-white mr-2 bg-yellow-500" v-else-if="map_Time_Obj[stop.StopUID].estimateTime <= 3">即將進站</span>
               <span class="px-4 py-1 rounded text-white mr-2 bg-green-500" v-else>{{map_Time_Obj[stop.StopUID].estimateTime}} 分</span>
               <label>{{ stop.StopName.Zh_tw }}</label>
+              <span 
+                class="px-2 py-1 ml-2 rounded text-white bg-pink-600" 
+                v-if="Object.prototype.hasOwnProperty.call(map_NearStop_Obj, stop.StopUID)">
+                  <i class="fas fa-bus"></i>
+                  {{ map_NearStop_Obj[stop.StopUID].PlateNumb }}
+                  {{ map_NearStop_Obj[stop.StopUID].A2EventType }}
+              </span>
           </h1>
         </div>
       </template>
-
     </div>
-
   </div>
 </template>
 
 <script>
 import Button from 'primevue/button';
 import { computed, onMounted, onUnmounted, ref } from '@vue/runtime-core'
-import {API_Bus_DisplayStopOfRoute, API_Bus_StopOfRoute, API_Bus_EstimatedTimeOfArrival} from "@/api/api.js";
+import {API_Bus_DisplayStopOfRoute, API_Bus_StopOfRoute, API_Bus_EstimatedTimeOfArrival,
+API_Bus_RealTimeByFrequency, API_Bus_RealTimeNearStop} from "@/api/api.js";
 import {useRouter, useRoute } from 'vue-router';
 import { useStore } from 'vuex';
 import 'vue-loading-overlay/dist/vue-loading.css';
@@ -58,15 +64,23 @@ export default {
       const city = computed(() => store.state.module_Bus.city_name.city_en); // 抓取縣市
       const map_Route_Obj = computed(()=> store.state.module_Bus.map_Route);
       const map_Time_Obj =  computed(()=> store.state.module_Bus.map_EstimateTime);
+      const map_NearStop_Obj =  computed(()=> store.state.module_Bus.map_RealTimeNearStop);
       const route_info = ref(map_Route_Obj.value[route.query.id]);
       const stopsOfRoute = ref();
       const timer = ref(30); // 預設 30s
       const isLoading = ref(false);
 
       onMounted(async()=>{
-        console.log(`onMounted: ${route.query.direct}`);
+        console.log("mounted");
         await set_StopOfRoute();
         await set_EstimatedTime();
+        await get_Current_Bus();
+      });
+
+      onUnmounted(()=>{
+        console.log("unmounted");
+        clearInterval(update_Timer);
+        store.dispatch('module_Bus/removeStopMarker'); // 頁面轉換則清空地圖上的 marker
       })
 
       // Taipei, Tainan, NewTaipei, Taoyuan, Taichung較有複雜的路線，PTX特別製作一個API來對應
@@ -111,16 +125,30 @@ export default {
           })
       }
 
+      const get_Current_Bus = ()=>{
+        const obj = {
+          city: city.value, 
+          routeUID: route.query.id, 
+          direction: route.query.direct, 
+        };
+        Promise.all([
+          API_Bus_RealTimeByFrequency(obj),
+          API_Bus_RealTimeNearStop(obj)
+        ]).then( (response) => {
+          // console.log(response[0].data);
+          store.dispatch('module_Bus/setApiNearStop', response[1].data); // 將路線紀錄到 vuex中並轉換成 map型態
+        }).catch( (err)=>{
+          console.log(err);
+        })
+      }
+
       // 30秒倒數計時器
       const update_Timer = setInterval(()=> {
         timer.value = timer.value -= 1; // 計時器倒數
-        console.log(timer.value);
         if(timer.value === 0 ) refresh_Route_Info(route.query.direct); // 倒數到 0則刷新
       }, 1000);
 
-      onUnmounted(()=>{
-        clearInterval(update_Timer);
-      })
+
           
       const showLoading =()=>{
           isLoading.value = true;
@@ -132,18 +160,22 @@ export default {
       // 改變行駛方向 或是 更新時間到刷新時執行
       const refresh_Route_Info =  async(direct)=>{
           showLoading();
-          if (direct != route.query.direct){ // 只有改變 Direction才執行(避免效能花費)
+          // 只有改變 Direction才執行(避免效能花費)
+          if (direct != route.query.direct){ 
             await router.push({ name: 'bus_City', query: { id: route.query.id, direct: direct}});
+             store.dispatch('module_Bus/removeStopMarker'); // 頁面轉換則清空地圖上的 marker
             await set_StopOfRoute(); 
           }
           await set_EstimatedTime();
+          await get_Current_Bus();
           timer.value = 30; // 更新時，重新倒數
       }
 
       const go_Position = ()=>{
         console.log(123);
       }
-      return {stopsOfRoute, route_info, timer, map_Time_Obj, isLoading,
+
+      return {stopsOfRoute, route_info, timer, map_Time_Obj, map_NearStop_Obj, isLoading,
             refresh_Route_Info, go_Position}
     },
 }

@@ -1,9 +1,8 @@
-
 export default {
     namespaced: true,
     state: {
         map: null,
-        currentPos: []
+        currentPos: [],
     },
     
     mutations: {
@@ -13,6 +12,12 @@ export default {
         set_CurrentPos(state, payload){
             state.currentPos = payload;
         },
+        add_Marker_To_Map(state, payload){
+            state.map.addLayer(payload);
+        },
+        remove_Marker_To_Map(state, payload){
+            state.map.removeLayer(payload);
+        }
 
     }
   }
