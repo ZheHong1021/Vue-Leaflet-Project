@@ -1,3 +1,4 @@
+import L from "leaflet";
 export default {
     namespaced: true,
     state: {
@@ -12,12 +13,17 @@ export default {
         set_CurrentPos(state, payload){
             state.currentPos = payload;
         },
-        add_Marker_To_Map(state, payload){
+        add_Layer_To_Map(state, payload){
             state.map.addLayer(payload);
         },
-        remove_Marker_To_Map(state, payload){
+        remove_Layer_To_Map(state, payload){
             state.map.removeLayer(payload);
+        },
+        pan_To_Map(state, payload){
+            state.map.panTo(L.latLng(payload.lat, payload.lng));
+        },
+        fitBound_Map(state, payload){
+            state.map.fitBounds(payload);
         }
-
     }
   }

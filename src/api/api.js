@@ -11,7 +11,8 @@ import {get_Bus_Route,
     get_Bus_RealTimeNearStop, 
     get_BusStop,
     get_BusStation,
-    get_NearByBusStop} from './bus';
+    get_NearByBusStop,
+    get_BusRouteShape} from './bus';
 
 /*====== 旅遊 ====== */
 export const API_Travel_ScenicSpot = get_Travel_ScenicSpot
@@ -81,4 +82,8 @@ export const API_BusStop = get_BusStop
 // 得到公車的站點資訊(使用到的位置: /components/Map)
 export const API_BusStation = get_BusStation
 
+// 得到目前位置的所有車站
 export const API_NearByBusStop = get_NearByBusStop
+
+// 得到特定路線的精細路線圖
+export const API_BusRouteShape = get_BusRouteShape

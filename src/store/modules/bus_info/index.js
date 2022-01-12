@@ -11,6 +11,8 @@ export default {
             direct: '',
         },
         stop_Markers: L.layerGroup(),
+        bus_Markers: L.layerGroup(),
+        route_Line: L.layerGroup(),
         map_Route: {},
         map_Stop: {},
         map_EstimateTime: {},
@@ -26,18 +28,38 @@ export default {
             commit('setApiRoute', map);
         },
         setApiStop({commit, state}, payload){
+            state.stop_Markers = L.layerGroup(); // // 清除座標資料
             const map = {}
-            state.stop_Markers = L.layerGroup();
             for (const item of payload) {
                 map[item.StopUID] = item;
-                const marker = L.marker([item.StopPosition.PositionLat, item.StopPosition.PositionLon]); 
+                const marker = L.marker([item.StopPosition.PositionLat, item.StopPosition.PositionLon])
+                    .bindPopup(`<h2 class='text-xl'>第${item.StopSequence}站_${item.StopName.Zh_tw}</h2>`); 
                 state.stop_Markers.addLayer(marker);
             }
             commit('setApiStop', map);
-            commit('module_Map/add_Marker_To_Map', state.stop_Markers, { root: true });
+            commit('module_Map/add_Layer_To_Map', state.stop_Markers, { root: true });
         },
         removeStopMarker({commit, state}){
-            commit('module_Map/remove_Marker_To_Map', state.stop_Markers, { root: true });
+            commit('module_Map/remove_Layer_To_Map', state.stop_Markers, { root: true });
+        },
+        setRouteShape({commit, state}, payload){
+            state.route_Line = L.layerGroup(); // // 清除座標資料
+            const line_arr = [];
+            const latlng = {lat: '', lng: ''};
+            payload.forEach((item, index) => {
+                // 奇數: lat，偶數: lng
+                if(index % 2 === 1){
+                    latlng.lat = item;
+                    line_arr.push([latlng.lat, latlng.lng]);
+                }else{
+                    latlng.lng = item;
+                }
+            });
+            state.route_Line.addLayer(L.polyline(line_arr));
+            commit('module_Map/add_Layer_To_Map', state.route_Line, { root: true });
+        },
+        removeRouteShape({commit, state}){
+            commit('module_Map/remove_Layer_To_Map', state.route_Line, { root: true });
         },
         setApiEstimateTime({commit}, payload){
             const map = {}
@@ -72,6 +94,20 @@ export default {
             }
             commit('setApiNearStop', map);
         },
+
+        setApiBusNow({commit, state}, payload){
+            state.bus_Markers = L.layerGroup(); // 清除座標資料
+            for (const item of payload) {
+                const marker = L.marker([item.BusPosition.PositionLat, item.BusPosition.PositionLon])
+                    .bindPopup(`<h2 class='text-lg'><i class="fas fa-bus"></i> ${item.PlateNumb} 目前位置</h2>`); 
+                state.bus_Markers.addLayer(marker);
+            }
+            commit('module_Map/add_Layer_To_Map', state.bus_Markers, { root: true });
+        },
+        removeBusMarker({commit, state}){
+            commit('module_Map/remove_Layer_To_Map', state.bus_Markers, { root: true });
+        },
+       
     },
     mutations:{
         setCityName(state, payload){
