@@ -1,4 +1,26 @@
 import L from 'leaflet'
+import 'leaflet-fontawesome-markers';
+import "leaflet-fontawesome-markers/L.Icon.FontAwesome.css";
+import {antPath} from 'leaflet-ant-path';
+import router from '@/router'
+
+
+const busMarker = L.icon.fontAwesome({
+    iconClasses: "fa fa-bus",
+    markerColor: "#e74c3c",
+    iconColor: "#FFF",
+    iconXOffset: -2,
+    iconYOffset: 0
+})
+const stopMarker = L.icon.fontAwesome({
+    iconClasses: "fa fa-bus",
+    markerColor: "#2c3e50",
+    iconColor: "#FFF",
+    iconXOffset: -2,
+    iconYOffset: 0
+})
+
+
 export default {
     namespaced: true,
     state:{
@@ -32,7 +54,7 @@ export default {
             const map = {}
             for (const item of payload) {
                 map[item.StopUID] = item;
-                const marker = L.marker([item.StopPosition.PositionLat, item.StopPosition.PositionLon])
+                const marker = L.marker([item.StopPosition.PositionLat, item.StopPosition.PositionLon], {icon: stopMarker} )
                     .bindPopup(`<h2 class='text-xl'>第${item.StopSequence}站_${item.StopName.Zh_tw}</h2>`); 
                 state.stop_Markers.addLayer(marker);
             }
@@ -44,18 +66,30 @@ export default {
         },
         setRouteShape({commit, state}, payload){
             state.route_Line = L.layerGroup(); // // 清除座標資料
-            const line_arr = [];
-            const latlng = {lat: '', lng: ''};
+            const line_arr = [], latlng = {lat: '', lng: ''};
+            const direct = router.currentRoute.value.query.direct;
+            console.log(direct);
             payload.forEach((item, index) => {
-                // 奇數: lat，偶數: lng
-                if(index % 2 === 1){
-                    latlng.lat = item;
-                    line_arr.push([latlng.lat, latlng.lng]);
-                }else{
+                if(index % 2 == 0){
                     latlng.lng = item;
+                }else{
+                    latlng.lat = item;
+                }
+                if(latlng.lat !== "" && latlng.lng){
+                    line_arr.push([latlng.lat, latlng.lng]);
+                    latlng.lat = "";
+                    latlng.lng = "";
                 }
             });
-            state.route_Line.addLayer(L.polyline(line_arr));
+            const antPolyline = antPath(line_arr, {
+                "delay": 1500,
+                "weight": 6,
+                "color": "#27ae60",
+                "pulseColor": "#2c3e50",
+                "reverse":  direct == 0 ? false : true
+              });
+
+            state.route_Line.addLayer(antPolyline);
             commit('module_Map/add_Layer_To_Map', state.route_Line, { root: true });
         },
         removeRouteShape({commit, state}){
@@ -98,7 +132,7 @@ export default {
         setApiBusNow({commit, state}, payload){
             state.bus_Markers = L.layerGroup(); // 清除座標資料
             for (const item of payload) {
-                const marker = L.marker([item.BusPosition.PositionLat, item.BusPosition.PositionLon])
+                const marker = L.marker([item.BusPosition.PositionLat, item.BusPosition.PositionLon], {icon: busMarker})
                     .bindPopup(`<h2 class='text-lg'><i class="fas fa-bus"></i> ${item.PlateNumb} 目前位置</h2>`); 
                 state.bus_Markers.addLayer(marker);
             }

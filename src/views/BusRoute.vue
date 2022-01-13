@@ -94,6 +94,7 @@ export default {
           routeUID: route.query.id, 
           direction: route.query.direct
         };
+        
         if( arr_DisplayFunc.includes(city.value) ){
           API_Bus_DisplayStopOfRoute(obj)
             .then( (res)=>{
@@ -114,7 +115,9 @@ export default {
 
         API_BusRouteShape(obj)
           .then( (res)=>{
-            const geometry = res.data[0].Geometry.replace('LINESTRING', '').replaceAll('(', '').replaceAll(')', '').replaceAll(',', ' ').split(' ');
+            // 台北與其他縣市不同: 沒有 Direction -> 所以額外去判斷 (正常: 0順行、 1逆行； 台北並沒有)
+            const direct = res.data[0].Direction !== undefined ? route.query.direct : 0;
+            const geometry = res.data[direct].Geometry.replace('LINESTRING ', '').replace('LINESTRING', '').replaceAll('(', '').replaceAll(')', '').replaceAll(', ', ' ').replaceAll(',', ' ').split(' ');
             store.dispatch('module_Bus/setRouteShape', geometry); // 將路線紀錄到 vuex中並轉換成 map型態
           }).catch( (err)=>{
             console.log('連線異常:' + err);
