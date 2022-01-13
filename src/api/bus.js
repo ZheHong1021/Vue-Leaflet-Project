@@ -50,5 +50,5 @@ export const get_BusStation = (data) => PTX_Bus_V2.get(`/Station/City/${data.cit
 export const get_NearByBusStop = (data) => PTX_Bus_V2.get(`/Stop/City/${data.city}/?$spatialFilter=nearby(${data.lat}, ${data.lng}, ${data.distance})&$format=JSON`);
 
 
-const select_BusRouteShape = 'Geometry';
+const select_BusRouteShape = 'Geometry, EncodedPolyline';
 export const get_BusRouteShape = (data) => PTX_Bus_V2.get(`/Shape/City/${data.city}/?$format=JSON&$select=${select_BusRouteShape}&$filter=RouteUID eq '${data.routeUID}'`);

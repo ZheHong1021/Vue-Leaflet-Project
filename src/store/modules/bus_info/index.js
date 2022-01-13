@@ -2,6 +2,7 @@ import L from 'leaflet'
 import 'leaflet-fontawesome-markers';
 import "leaflet-fontawesome-markers/L.Icon.FontAwesome.css";
 import {antPath} from 'leaflet-ant-path';
+import polyUtil from 'polyline-encoded';
 import router from '@/router'
 
 
@@ -65,28 +66,18 @@ export default {
             commit('module_Map/remove_Layer_To_Map', state.stop_Markers, { root: true });
         },
         setRouteShape({commit, state}, payload){
-            state.route_Line = L.layerGroup(); // // 清除座標資料
-            const line_arr = [], latlng = {lat: '', lng: ''};
+            state.route_Line = L.layerGroup(); // 清除座標資料
+            
             const direct = router.currentRoute.value.query.direct;
             console.log(direct);
-            payload.forEach((item, index) => {
-                if(index % 2 == 0){
-                    latlng.lng = item;
-                }else{
-                    latlng.lat = item;
-                }
-                if(latlng.lat !== "" && latlng.lng){
-                    line_arr.push([latlng.lat, latlng.lng]);
-                    latlng.lat = "";
-                    latlng.lng = "";
-                }
-            });
+            const line_arr = polyUtil.decode(payload);
             const antPolyline = antPath(line_arr, {
                 "delay": 1500,
                 "weight": 6,
                 "color": "#27ae60",
                 "pulseColor": "#2c3e50",
-                "reverse":  direct == 0 ? false : true
+                // "reverse":  direct == 0 ? false : true
+                "reverse": false
               });
 
             state.route_Line.addLayer(antPolyline);

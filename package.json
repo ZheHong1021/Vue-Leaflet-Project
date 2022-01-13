@@ -21,6 +21,7 @@
     "leaflet-sidebar-v2": "^3.2.3",
     "leaflet.markercluster": "^1.5.0",
     "leaflet.styledlayercontrol": "^1.0.0",
+    "polyline-encoded": "^0.0.9",
     "postcss": "^7",
     "primeicons": "^4.1.0",
     "primevue": "^3.6.0",
